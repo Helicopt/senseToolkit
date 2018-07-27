@@ -127,7 +127,7 @@ class ImgVideoWriter(object):
         assert os.path.isdir(path)
 
     def write(self, im):
-        ret = cv2.imwrite(self.path+'/'+self.fmt%(self.start + self.ptr))
+        ret = cv2.imwrite(self.path+'/'+self.fmt%(self.start + self.ptr), im)
         self.ptr+=1
         return ret
 
