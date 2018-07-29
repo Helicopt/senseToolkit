@@ -6,3 +6,6 @@
 # mail: fengweitao@sensetime.com
 # Created Time: 2018年07月27日 星期五 12时31分26秒
 #########################################################################
+
+from ImageGallery import IMGallery as IMGallery
+from FileAgent import *
