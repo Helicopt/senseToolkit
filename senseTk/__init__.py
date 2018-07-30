@@ -11,7 +11,7 @@ import common
 import tracking
 import magic
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 __required__ = [
             'numpy>=1.12.1',
             'qimage2ndarray>=1.6',

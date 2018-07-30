@@ -9,6 +9,7 @@
 import httplib
 import ftplib
 import os
+import cv2
 from re import *
 from copy import copy
 import tempfile
@@ -22,7 +23,7 @@ class quickFtpCon(object):
 	funcs = ['__init__', '__getattribute__', 'connect', 'clear_buffer',
 	'cb_buffer', 'get_buffer', '__dict__']
 
-	def __init__(self, ip_, port_ = '', usn_ = 'anonymous', pwd_ = '', secure_ = False):
+	def __init__(self, ip_, port_ = 0, usn_ = 'anonymous', pwd_ = '', secure_ = False):
 		self.ip = ip_
 		self.port = port_
 		self.usn = usn_
@@ -39,8 +40,14 @@ class quickFtpCon(object):
 			return super(quickFtpCon, self).__getattribute__(x)
 		return getattr(self.con, x)
 
-	def connect(self):
-		self.con.connect(self.ip, self.port)
+	def connect(self, usn = None, pwd = None):
+		# print self.ip, type(self.port), self.port, self.usn, self.passwd
+		if self.port>1023 and self.port<65536:
+			self.con.connect(self.ip, self.port)
+		else:
+			self.con.connect(self.ip)
+		if usn is not None and pwd is not None:
+			self.usn, self.passwd = usn, pwd
 		self.con.login(self.usn, self.passwd)
 		if self.secure_:
 			self.con.prot_p()
@@ -205,6 +212,8 @@ class localFile(object):
 
 	def img(self):
 		im = cv2.imread(self.path)
+		if im is None:
+			raise IOError('No such file or directory: %s'%self.path)
 		return im
 
 def suitFtp(x):
@@ -219,8 +228,14 @@ def parse4Ftp(x):
 	# print urlres.scheme
 	# print urlres.netloc
 	# print urlres.path
+	# print urlres.query
+	# print urlres.fragment
 	netloc = urlres.netloc.split(':')
-	return ftpFile(quickFtpCon(*netloc).connect(), urlres.path)
+	ip = netloc[0]
+	port = 0
+	if len(netloc)>1:
+		port = int(netloc[1])
+	return ftpFile(quickFtpCon(ip, port).connect(urlres.query, urlres.fragment), urlres.path)
 
 def parse4Http(x):
 	return None

@@ -115,6 +115,17 @@ class VideoClipReader(object):
         else:
             return super(VideoClipReader, self).__getattribute__(x)
 
+    def __len__(self):
+        return int(self.length())
+
+    def __getitem__(self, ind):
+        if ind!=int(self.get(cv2.cv.CV_CAP_PROP_POS_FRAMES)):
+            self.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, ind)
+        s, im = self.read()
+        if not s or im is None:
+            raise Exception('read img error')
+        return im
+
 class ImgVideoWriter(object):
 
     def __init__(self, path, fmt = ImgVideoCapture.DEFAULT_FMT, start = 1):
