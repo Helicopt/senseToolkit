@@ -159,7 +159,8 @@ class ftpFile(object):
 	def release_tmp(self):
 		if self.__fn is not None:
 			try:
-				os.system('rm %s'%self.__fn)
+				if os.path.isfile(self.__fn):
+					os.system('rm %s'%self.__fn)
 			except Exception as e:
 				pass
 
@@ -184,7 +185,10 @@ class ftpFile(object):
 	def download(self, fd = None):
 		if self.is_file():
 			if fd is None:
-				fd, fn = ftpFile.createTmpFile(self)
+				if self.__fn is None:
+					fd, fn = ftpFile.createTmpFile(self)
+				else:
+					fd = open(self.__fn, 'wb')
 			self.con.retrbinary('RETR %s'%self.url, ftpFile.__transfer(fd))
 			fd.close()
 		return self
@@ -198,20 +202,89 @@ class ftpFile(object):
 	def img(self, refresh = False):
 		if self.is_img():
 			if self.__im is None or refresh:
-				self.download()
+				if self.__fn is None or refresh:
+					self.download()
 				self.__im = cv2.imread(self.__fn)
 		return self.__im
+
+	def __del__(self):
+		self.release_tmp()
+
+class httpFile(object):
+
+	def __init__(self, url, timeout = 10):
+		rs = urlparse.urlparse(url)
+		self.host = rs.netloc
+		self.path = rs.path
+		self.url = rs.path+'?'+rs.query+'#'+rs.fragment
+		# print self.url
+		self.__fn = None
+		self.__im = None
+		self.conn = httplib.HTTPConnection(self.host, timeout = timeout)
+
+	@staticmethod
+	def createTmpFile(item = None):
+		fd, fn = tempfile.mkstemp()
+		# print fd, fn
+		if item is not None:
+			item.__fn = fn
+		return os.fdopen(fd, 'wb'), fn
+
+	def download(self, fd = None):
+		# print dir(self.conn)
+		h = self.conn
+		h.request('GET', self.url)
+		receive = h.getresponse()
+		errcode, errmsg = receive.status, receive.reason
+		# print errcode, errmsg, headers
+		if errcode!=200:
+			raise IOError('Connection to %s refused. [%d] %s'%(self.host, errcode, errmsg))
+		receive = receive.read()
+		if fd is None:
+			if self.__fn is None:
+				fd, fn = httpFile.createTmpFile(self)
+			else:
+				fd = open(self.__fn, 'wb')
+		fd.write(receive)
+		fd.close()
+		return self
+
+	def release_tmp(self):
+		if self.__fn is not None:
+			try:
+				if os.path.isfile(self.__fn):
+					os.system('rm %s'%self.__fn)
+				self.__fn = None
+			except Exception as e:
+				pass
+
+	def img(self, refresh = False):
+		if self.__im is None or refresh:
+			if self.__fn is None or refresh:
+				self.download()
+			self.__im = cv2.imread(self.__fn)
+		return self.__im
+
+	def release(self):
+		self.release_tmp()
+
+	def __del__(self):
+		self.release()
+		self.conn.close()
 
 class localFile(object):
 
 	def __init__(self, path):
 		self.path = path
+		self.__im = None
 
-	def download(self):
+	def download(self, fd = None):
 		return self
 
-	def img(self):
-		im = cv2.imread(self.path)
+	def img(self, refresh = False):
+		if self.__im is None or refresh:
+			self.__im = cv2.imread(self.path)
+		im = self.__im
 		if im is None:
 			raise IOError('No such file or directory: %s'%self.path)
 		return im
@@ -238,7 +311,7 @@ def parse4Ftp(x):
 	return ftpFile(quickFtpCon(ip, port).connect(urlres.query, urlres.fragment), urlres.path)
 
 def parse4Http(x):
-	return None
+	return httpFile(x)
 
 def parse4Local(x):
 	return localFile(x)
@@ -276,3 +349,10 @@ def getFile(x):
 # 	if f.is_dir():
 # 		for one in f.list():
 # 			print one
+
+
+# if __name__=='__main__':
+# 	htp = httpFile('https://www.baidu.com/img/bd_logo1.png?where=super')
+# 	im = htp.img()
+# 	cv2.imshow('', im)
+# 	cv2.waitKey(0)

@@ -24,7 +24,8 @@ if __name__=='__main__':
     # alignTrackSet2Video(vid, dt, action = cvShow)
     # vis
     # data = ['ftp://10.10.15.115/lustre/fengweitao/Siamese_FC/train5/samples/000001.02.crop.z_000427.31.crop.x_-1_%s.jpg'%i for i in ['A', 'B']]
-    data = ['ftp://10.1.30.165:2121/img1/%06d.jpg'%i for i in xrange(1,100)]
+    data = ['http://10.1.30.165:8000/%06d.jpg'%i for i in xrange(1,100)]
+    # data = ['ftp://10.1.30.165:2121/img1/%06d.jpg'%i for i in xrange(1,100)]
     # data = [getFile('ftp://10.1.30.165:2121/img1/%06d.jpg'%i) for i in xrange(1,100)]
     # data = VideoClipReader('/home/sensetime/data/MOT16video/MOT16-05.avi')
     def cb(im, ind):

@@ -29,14 +29,27 @@ def getQImg(im):
 
 class IMGallery(QWidget):
 
-	def __init__(self, data, ind = 0, top_left = (0, 0), size = (1600, 900)):
+	def __init__(self, data, ind = 0, top_left = (0, 0), size = (1600, 900), cache = True):
 		super(IMGallery, self).__init__()
 		global IMGAapp
 		self.app = IMGAapp
 		self.data = data
+		self.imgcache = [None] * len(self.data)
 		self.size = size
 		self.callback = None
+		self._cache = cache
 		self.__initGUI(ind, top_left, size)
+
+	@property
+	def cache(self):
+		return self._cache
+
+	@cache.setter
+	def cache(self, value):
+		if val==False:
+			self._cache = False
+		else:
+			self._cache = True
 
 	def __initGUI(self, ind, top_left, size):
 		self.resize(*size)
@@ -82,12 +95,18 @@ class IMGallery(QWidget):
 
 		return self
 
-	def __gain(self, ind):
+	def __gain(self, ind, udp = False):
 		one = self.data[ind]
 		if isinstance(one, str):
 			rs = urlparse.urlparse(one)
 			label = rs.scheme+'://'+rs.netloc+rs.path
-			im = FileAgent.getFile(one).download().img()
+			if self._cache:
+				if self.imgcache[ind] is None:
+					self.imgcache[ind] = FileAgent.getFile(one)
+				f = self.imgcache[ind]
+			else:
+				f = FileAgent.getFile(one)
+			im = f.img(refresh = udp)
 		elif isinstance(one, np.ndarray):
 			label = 'nolabel'
 			im = self.data[self.ind]
@@ -95,7 +114,7 @@ class IMGallery(QWidget):
 			label, im = one(ind)
 		else:
 			label = one.url
-			im = one.img()
+			im = one.img(refresh = udp)
 		return label, im
 
 	def __adjustStr(self, x):
@@ -113,8 +132,8 @@ class IMGallery(QWidget):
 		return int(im.shape[1]/mi), int(im.shape[0]/mi)
 		# return cv2.resize(im, (int(im.shape[1]/mi), int(im.shape[0]/mi)))
 
-	def refresh(self):
-		label, im = self.__gain(self.ind)
+	def refresh(self, update = False):
+		label, im = self.__gain(self.ind, update)
 		self.callback(im, self.ind)
 		self.setWindowTitle('IMGallery' + '  -  ' + self.__adjustStr(label))
 		im = cv2.resize(im, self.__adjustImSize(im))
@@ -130,7 +149,7 @@ class IMGallery(QWidget):
 		return ret_code, self
 
 	def S_refresh(self):
-		self.refresh()
+		self.refresh(update=True)
 
 	def S_prev(self, d = 1):
 		self.ind -= d
