@@ -8,3 +8,4 @@
 #########################################################################
 from ImageGallery import IMGallery as IMGallery
 from FileAgent import *
+from GridSearch import gridSearcher, OrderedDict
