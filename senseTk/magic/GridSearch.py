@@ -17,9 +17,14 @@ import random
 import tempfile
 import re
 import logging
-logging.USER = logging.INFO-5
-logging.addLevelName(logging.USER, 'USER')
-logging.basicConfig(level = logging.USER,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+USERLOG = logging.DEBUG + 5
+logging.addLevelName(USERLOG, 'USER')
+gridsearch_formatter = logging.Formatter('%(asctime)s - %(name)s {%(thread)d} %(levelname)s] %(message)s')
+
+gridsearch_stream_handler = logging.StreamHandler()
+gridsearch_stream_handler.setLevel(USERLOG)
+gridsearch_stream_handler.setFormatter(gridsearch_formatter)
 
 from bigBitset import BigBitSet
 
@@ -95,6 +100,8 @@ class gridSearcher(object):
 		self.llock = threading.Lock()
 		self.rec_json = None
 		self.logger = logging.getLogger(self.name)
+		self.logger.addHandler(gridsearch_stream_handler)
+		self.logger.setLevel(USERLOG)
 		self.max_job = 64
 		self.done = 0
 		self.tot = 1
@@ -130,7 +137,7 @@ class gridSearcher(object):
 			self.max_job = cnt
 
 	def log(self, msg, *args):
-		self.logger.log(logging.USER, msg%args)
+		self.logger.log(USERLOG, msg%args)
 
 	def __call__(self):
 		return self.execute()

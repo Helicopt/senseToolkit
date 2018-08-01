@@ -10,8 +10,8 @@ from senseTk.magic import *
 
 def run_f(holder, p, tid):
 	# holder.llock.acquire()
-	holder.log(str(p))
-	holder.log('running task %d'% tid)
+	# holder.log(str(p))
+	# holder.log('running task %d'% tid)
 	# holder.llock.release()
 	return (p['p1'] - 7)**2 + (p['p2'] - 2)**2 + 5
 
