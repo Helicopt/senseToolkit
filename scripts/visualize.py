@@ -31,4 +31,5 @@ if __name__=='__main__':
     def cb(im, ind):
     	import cv2
     	cv2.rectangle(im, (50,50), (60, 60+ind), (0,0,0), 1)
+    requireQA()
     _ = IMGallery(data).show(cb)

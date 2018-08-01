@@ -8,17 +8,20 @@
 #########################################################################
 import sys
 import cv2
-from PyQt4.QtGui import *
-from PyQt4 import QtCore
+try:
+	from PyQt4.QtGui import *
+	from PyQt4 import QtCore
+	from qimage2ndarray import *
+except ImportError:
+	pass
 from math import *
-from qimage2ndarray import *
 import time
 import FileAgent
 import urlparse
 import numpy as np
 
 global IMGAapp
-IMGAapp = QApplication([sys.argv[0]])
+IMGAapp = None
 
 def getQImg(im):
 	if im is None:
@@ -26,6 +29,11 @@ def getQImg(im):
 	im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 	im = array2qimage(im)
 	return QPixmap.fromImage(im)
+
+def requireQA():
+	global IMGAapp
+	if IMGAapp is None:
+		IMGAapp = QApplication([sys.argv[0]])
 
 class IMGallery(QWidget):
 
