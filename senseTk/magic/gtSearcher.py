@@ -136,7 +136,7 @@ class gtSearcher(object):
 					item = self.fdict[two]
 					if splMatch(one.split('!!')[-1], two.split('!!')[-1]) and ''.join(one.split('!!')[:-1])==''.join(two.split('!!')[:-1]):
 						self.fdict[one] = (v[0], v[1], v[2]+item[2])
-						v = self.fdict[one]
+						v = list(set(self.fdict[one]))
 						del unMerge[i]
 						continue
 					i += 1
