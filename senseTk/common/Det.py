@@ -178,7 +178,7 @@ class VidDet(object): #general Det of Video
         return js
 
 
-    def __init__(self, fn = None, dealer = readline, filter = None):
+    def __init__(self, fn = None, dealer = None, filter = None):
         self.frd = {}
         self.ped = {}
         self.cache = {}
@@ -186,7 +186,10 @@ class VidDet(object): #general Det of Video
             f = open(fn)
             rows = f.readlines()
             for row in rows:
-                D = dealer(row)
+                if dealer is None:
+                    D = self.readline(row)
+                else:
+                    D = dealer(row)
                 if D is None or filter is not None and not filter(D): continue
                 # print type(D)
                 if isinstance(D, Det)==False:
