@@ -106,8 +106,8 @@ class Det(object):
 
     def __str__(self):
         return '%d,%d,%.2f,%.2f,%.2f,%.2f,%.3f,%s,%d,-1'%\
-        	(self.fr, self.uid, self.x1, self.y1, self.w, self.h,
-        	 self.conf, str(self.label), self.status)
+            (self.fr, self.uid, self.x1, self.y1, self.w, self.h,
+             self.conf, str(self.label), self.status)
 
     def toList(self):
         return [self.x1, self.y1, self.w, self.h]
@@ -121,6 +121,7 @@ class VidDet(object): #general Det of Video
     min_fr = 1000000000
     max_fr = -1
 
+    @staticmethod
     def readline(row):
         bk = row
         row = row.strip().split(',')
@@ -140,6 +141,7 @@ class VidDet(object): #general Det of Video
             fr = fr, uid = uid, status = enable)
         return res
 
+    @staticmethod
     def readline2(row):
         bk = row
         row = row.strip().split(' ')
