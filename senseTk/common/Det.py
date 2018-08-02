@@ -173,8 +173,9 @@ class VidDet(object): #general Det of Video
                 js['%02d'%one] = tmp
                 one = self(one)
                 for i in one.frameRange():
-                    it = one[i][0]
-                    tmp['%06d'%i] = [it.x1, it.y1, it.x2, it.y2]
+                    if len(one[i]):
+                        it = one[i][0]
+                        tmp['%06d'%i] = [it.x1, it.y1, it.x2, it.y2]
         return js
 
 
