@@ -23,7 +23,7 @@ class ImgVideoCapture(object):
     def open(self, img_dir, fmt = DEFAULT_FMT, start = 1):
         self.i_root = img_dir
         self.fmt = fmt
-        self.start = 1
+        self.start = start
         # print 'testing',self.i_root+'/'+'%05d.png'%1
         im = cv2.imread(img_dir+'/'+fmt%start)
         if im is None: return False
