@@ -9,7 +9,13 @@
 
 from setuptools import setup, find_packages
 from distutils.version import LooseVersion, StrictVersion
-from senseTk import __version__, __required__
+
+__version__ = '0.3.1'
+
+__required__ = [
+            'numpy>=1.12.1',
+            'qimage2ndarray>=1.6'
+        ]
 required = __required__
 try:
     import cv2
