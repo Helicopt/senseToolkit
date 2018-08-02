@@ -1,14 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf8 -*-
 #########################################################################
-# File Name: __init__.py
+# File Name: senseTk/tracking/sot/__init__.py
 # Author: Toka
 # mail: fengweitao@sensetime.com
-# Created Time: 2018年07月27日 星期五 12时22分05秒
+# Created Time: 2018年08月02日 星期四 19时23分06秒
 #########################################################################
-
-import common
-import tracking
-import magic
-
-__version__ = '0.3.2'
+from preprocess import *

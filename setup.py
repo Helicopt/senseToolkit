@@ -10,7 +10,7 @@
 from setuptools import setup, find_packages
 from distutils.version import LooseVersion, StrictVersion
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 __required__ = [
             'numpy>=1.12.1',

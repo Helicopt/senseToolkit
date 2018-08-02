@@ -155,6 +155,27 @@ class VidDet(object): #general Det of Video
             fr = fr, uid = uid)
         return res
 
+    def toJson(self, frfirst = False):
+        js = {}
+        if frfirst:
+            for i in self.frameRange():
+                tmp = {}
+                js['%06d'%i] = tmp
+                one = self[i]
+                for it in one:
+                    tmp['%02d'%it.uid] = [it.x1, it.y1, it.x2, it.y2]
+            
+        else:
+            for one in self.allPed():
+                tmp = {}
+                js['%02d'%one] = tmp
+                one = self(one)
+                for i in one.frameRange():
+                    it = one[i][0]
+                    tmp['%06d'%i] = [it.x1, it.y1, it.x2, it.y2]
+        return js
+
+
     def __init__(self, fn = None, dealer = readline, filter = None):
         self.frd = {}
         self.ped = {}
