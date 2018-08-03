@@ -61,11 +61,11 @@ class worker(threading.Thread):
 		self.holder.done+=1
 		self.holder.rec_json[str(ind)] = OrderedDict({'rec': OrderedDict(res), 'params': self.argv[1]})
 		self.holder.bb[ind] = 1
-		bak = recfile+'.bak'
+		bak = self.holder.recfile+'.bak'
 		fd = open(bak, 'w')
 		json.dump(self.holder.rec_json, fd, indent = 2, sort_keys = True)
 		fd.close()
-		os.system('mv %s %s'%(bak, recfile))
+		os.system('mv %s %s'%(bak, self.holder.recfile))
 		self.holder.bb.save()
 		pstr = 'progress: %.2f %% ( %d / %d )'%(self.holder.done*100./self.holder.tot,
 			self.holder.done, self.holder.tot)
@@ -181,6 +181,8 @@ class gridSearcher(object):
 		else:
 			bits = './%s.bits'%self.name
 			recfile = './%s.rec'%self.name
+		self.bits = bits
+		self.recfile = recfile
 		if not os.path.isfile(bits):
 			self.bb = BigBitSet(self.tot)
 			fd = open(bits, 'wb')
