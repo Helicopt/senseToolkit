@@ -59,7 +59,6 @@ class worker(threading.Thread):
 		# global llock, bb, rec_json
 		self.holder.llock.acquire()
 		self.holder.done+=1
-		self.holder.logger.info(pstr)
 		self.holder.rec_json[str(ind)] = OrderedDict({'rec': OrderedDict(res), 'params': self.argv[1]})
 		self.holder.bb[ind] = 1
 		bak = recfile+'.bak'
@@ -70,6 +69,7 @@ class worker(threading.Thread):
 		self.holder.bb.save()
 		pstr = 'progress: %.2f %% ( %d / %d )'%(self.holder.done*100./self.holder.tot,
 			self.holder.done, self.holder.tot)
+		self.holder.logger.info(pstr)
 		self.holder.llock.release()
 
 def gen_params(st, p):
