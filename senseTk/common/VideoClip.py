@@ -18,7 +18,8 @@ class ImgVideoCapture(object):
 
     def __init__(self, img_dir = None, fmt = DEFAULT_FMT, start = 1):
         if img_dir is not None:
-            self.open(img_dir, fmt, start)
+            if not self.open(img_dir, fmt, start):
+                raise Exception('Unable to load image.')
 
     def open(self, img_dir, fmt = DEFAULT_FMT, start = 1):
         self.i_root = img_dir
@@ -92,7 +93,7 @@ class VideoClipReader(object):
         return self.backend.set(code, value)
 
     def ImgSize(self):
-        return self.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH), self.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)
+        return int(self.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)), int(self.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
 
     def fps(self):
         fps = self.get(cv2.cv.CV_CAP_PROP_FPS)
@@ -101,7 +102,7 @@ class VideoClipReader(object):
         return fps
 
     def length(self):
-        return self.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT)
+        return int(self.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
 
     def __setattr__(self, x, y):
         if x=='pos':
