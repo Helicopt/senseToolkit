@@ -142,7 +142,8 @@ class IMGallery(QWidget):
 
 	def refresh(self, update = False):
 		label, im = self.__gain(self.ind, update)
-		self.callback(im, self.ind)
+		if callable(self.callback):
+			self.callback(im, self.ind)
 		self.setWindowTitle('IMGallery' + '  -  ' + self.__adjustStr(label))
 		im = cv2.resize(im, self.__adjustImSize(im))
 		im = getQImg(im)
@@ -159,12 +160,20 @@ class IMGallery(QWidget):
 	def S_refresh(self):
 		self.refresh(update=True)
 
-	def S_prev(self, d = 1):
+	def S_prev(self, *args, **kwargs):
+		if 'd' not in kwargs:
+			d = 1
+		else:
+			d = kwargs['d']
 		self.ind -= d
 		self.ind = max(self.ind, 0)
 		self.refresh()
 
-	def S_next(self, d = 1):
+	def S_next(self, *args, **kwargs):
+		if 'd' not in kwargs:
+			d = 1
+		else:
+			d = kwargs['d']
 		self.ind += d
 		self.ind = min(self.ind, len(self.data)-1)
 		self.refresh()
@@ -189,8 +198,8 @@ class IMGallery(QWidget):
 		if e.key() == QtCore.Qt.Key_L:
 			self.S_next()
 		if e.key() == QtCore.Qt.Key_PageUp or e.key() == QtCore.Qt.Key_I:
-			self.S_prev(25)
+			self.S_prev(d=25)
 		if e.key() == QtCore.Qt.Key_PageDown or e.key() == QtCore.Qt.Key_K:
-			self.S_next(25)
+			self.S_next(d=25)
 		if e.key() == QtCore.Qt.Key_Q:
 			self.close()
