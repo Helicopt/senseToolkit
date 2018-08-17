@@ -422,7 +422,7 @@ class VidDet(object): #general Det of Video
 
     def __call__(self, ind):
         if ind in self.cache:
-            return self.cache
+            return self.cache[ind]
         if ind in self.ped:
             ret = self.__class__()
             for one in self.ped[ind]:
