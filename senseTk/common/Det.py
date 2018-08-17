@@ -7,6 +7,7 @@
 # Created Time: 2018年07月27日 星期五 13时39分48秒
 #########################################################################
 import copy
+import re
 
 class Det(object):
 
@@ -14,7 +15,7 @@ class Det(object):
     y1 = 0 
     w = 5 
     h = 5 
-    __free__ = False
+    # __free__ = False
 
     OBJECT_PED = 1
     OBJECT_OTHER = 2
@@ -22,27 +23,76 @@ class Det(object):
 
     def __init__(self, x1, y1, w, h, cls = None, confidence = 1.,
      uid = -1, fr = -1, status = -1):
-        self.x1 = x1
-        self.y1 = y1
-        self.w = w 
-        self.h = h 
+        self._x1 = x1
+        self._y1 = y1
+        self._w = w 
+        self._h = h 
         self.label = cls 
         self.conf = confidence
         self.uid = uid
         self.fr = fr
         self.status = status
+
+    @property
+    def w(self):
+        return self._w
+
+    @w.setter
+    def h(self, w):
+        self._w = w
+    
+    @property
+    def h(self):
+        return self._h
+
+    @h.setter
+    def h(self, h):
+        self._h = h
+    
+    @property
+    def x1(self):
+        return self._x1
+
+    @x1.setter
+    def x1(self, x1):
+        self._x1 = x1
+    
+    @property
+    def x2(self):
+        return self._x1 + self._w
+    
+    @property
+    def y1(self):
+        return self._y1
+    
+    @x2.setter
+    def x2(self, x2):
+        self._x2 = x2
+    
+    @property
+    def y2(self):
+        return self._y1 + self._h
+    
+    @property
+    def cx(self):
+        return self._x1 + self._w/2
+    
+    @property
+    def cy(self):
+        return self._y1 + self._h/2
+    
         
-    def __setattr__(self, x, y): 
-        if not self.__free__ and (x=='x2' or x=='y2' or x=='cx' or x=='cy'):
-            raise Exception('cannot modify infered properties')
-        super(Det, self).__setattr__(x, y)
-        if x=='x1' or x=='y1' or x=='w' or x=='h':
-            self.__free__ = True
-            self.x2 = self.x1 + self.w
-            self.y2 = self.y1 + self.h
-            self.cx = (self.x1 + self.x2)/2
-            self.cy = (self.y1 + self.y2)/2
-            self.__free__ = False
+    # def __setattr__(self, x, y): 
+    #     if not self.__free__ and (x=='x2' or x=='y2' or x=='cx' or x=='cy'):
+    #         raise Exception('cannot modify infered properties')
+    #     super(Det, self).__setattr__(x, y)
+    #     if x=='x1' or x=='y1' or x=='w' or x=='h':
+    #         self.__free__ = True
+    #         self.x2 = self.x1 + self.w
+    #         self.y2 = self.y1 + self.h
+    #         self.cx = (self.x1 + self.x2)/2
+    #         self.cy = (self.y1 + self.y2)/2
+    #         self.__free__ = False
         
     def area(self):
         w = max(self.w, 0)
@@ -157,6 +207,81 @@ class VidDet(object): #general Det of Video
             fr = fr, uid = uid)
         return res
 
+    @staticmethod
+    def formatline(row, formatter):
+        items = re.split('[,\\s]+', formatter.strip())
+        row = re.split('[,\\s]+', row.strip())
+        if len(items)!=len(row):
+            raise Exception('Formatter does not match line: %d vs %d'%(len(items), len(row)))
+        tmp = {}
+        for k, v in zip(items, row):
+            tp = float
+            if '.' in k:
+                k, t = k.split('.')
+                if t=='i': tp = int
+                if t=='s': tp = str
+                if t=='f': tp = float
+            tmp[k] = tp(v)
+        if 'x1' in tmp and 'w' in tmp:
+            x1 = tmp['x1']
+            y1 = tmp['y1']
+            w = tmp['w']
+            h = tmp['h']
+        if 'cx' in tmp and 'w' in tmp:
+            w = tmp['w']
+            h = tmp['h']
+            x1 = tmp['cx'] - w/2
+            y1 = tmp['cy'] - h/2
+        if 'x1' in tmp and 'x2' in tmp:
+            x1 = tmp['x1']
+            y1 = tmp['y1']
+            w = tmp['x2'] - x1
+            h = tmp['y2'] - y1
+        kwargs = {}
+        if 'fr' in tmp: kwargs['fr'] = tmp['fr']
+        if 'id' in tmp: kwargs['uid'] = tmp['id']
+        if 'la' in tmp: kwargs['cls'] = tmp['la']
+        if 'cf' in tmp: kwargs['confidence'] = tmp['cf']
+        if 'st' in tmp: kwargs['status'] = tmp['st']
+        res = Det(x1,y1,w,h, **kwargs)
+        return res
+
+    def dump(self, fd, formatter = 'MOT16'):
+        if formatter=='MOT16':
+            formatter = 'fr.i,id.i,x1,y1,w,h,-1,st.i,-1,-1'
+        items = re.split('[,\\s]+', formatter.strip())
+        for i in self.frameRange():
+            one = self[i]
+            for dt in one:
+                tmp = ''
+                for i, k in enumerate(items):
+                    tp = str
+                    if '.' in k:
+                        k, t = k.split('.')
+                        if t=='i': tp = int
+                        if t=='s': tp = str
+                        if t=='f': tp = float
+                    v = k
+                    if k=='fr': v = dt.fr
+                    if k=='id': v = dt.uid
+                    if k=='x1': v = dt.x1
+                    if k=='x2': v = dt.x2
+                    if k=='y1': v = dt.y1
+                    if k=='y2': v = dt.y2
+                    if k=='cx': v = dt.cx
+                    if k=='cy': v = dt.cy
+                    if k=='w': v = dt.w
+                    if k=='h': v = dt.h
+                    if k=='la': v = dt.label
+                    if k=='st': v = dt.status
+                    if k=='cf': v = dt.confidence
+                    v = tp(v)
+                    if i==0:
+                        tmp = tmp + '%s'%v
+                    else:
+                        tmp = tmp + ',%s'%v
+                fd.write(tmp+'\n')
+
     def toJson(self, frfirst = False):
         js = {}
         if frfirst:
@@ -179,7 +304,7 @@ class VidDet(object): #general Det of Video
         return js
 
 
-    def __init__(self, fn = None, dealer = None, filter = None):
+    def __init__(self, fn = None, dealer = None, filter = None, formatter = None):
         self.frd = {}
         self.ped = {}
         self.cache = {}
@@ -188,7 +313,10 @@ class VidDet(object): #general Det of Video
             rows = f.readlines()
             for row in rows:
                 if dealer is None:
-                    D = self.readline(row)
+                    if formatter is None:
+                        D = self.readline(row)
+                    else:
+                        D = self.formatline(row, formatter)
                 else:
                     D = dealer(row)
                 if D is None or filter is not None and not filter(D): continue

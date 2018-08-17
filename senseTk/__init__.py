@@ -11,4 +11,4 @@ import common
 import tracking
 import magic
 
-__version__ = '0.3.4'
+__version__ = '0.3.5'
