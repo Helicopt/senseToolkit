@@ -38,7 +38,7 @@ class Det(object):
         return self._w
 
     @w.setter
-    def h(self, w):
+    def w(self, w):
         self._w = w
     
     @property
