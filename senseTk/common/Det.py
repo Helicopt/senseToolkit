@@ -65,9 +65,9 @@ class Det(object):
     def y1(self):
         return self._y1
     
-    @x2.setter
-    def x2(self, x2):
-        self._x2 = x2
+    @y1.setter
+    def y1(self, y1):
+        self._y1 = y1
     
     @property
     def y2(self):
