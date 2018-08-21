@@ -113,7 +113,7 @@ class Det(object):
 
     def iou(self, o):
         intersect = self.intersection(o)
-        return intersect / (self.area() + o.area() - intersect);
+        return intersect * 1. / (self.area() + o.area() - intersect);
 
     def lt(self, ox = 0, oy = 0, trim = True):
         if trim:
