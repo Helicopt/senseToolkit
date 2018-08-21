@@ -115,11 +115,17 @@ class Det(object):
         intersect = self.intersection(o)
         return intersect / (self.area() + o.area() - intersect);
 
-    def lt(self, ox = 0, oy = 0):
-        return (self.x1 + ox, self.y1 + oy)
+    def lt(self, ox = 0, oy = 0, trim = True):
+        if trim:
+            return (int(self.x1 + ox), int(self.y1 + oy))
+        else:
+            return ((self.x1 + ox), (self.y1 + oy))
 
-    def rb(self, ox = 0, oy = 0):
-        return (self.x1 + self.w + ox, self.y1 + self.h + oy)
+    def rb(self, ox = 0, oy = 0, trim = True):
+        if trim:
+            return (int(self.x1 + self.w + ox), int(self.y1 + self.h + oy))
+        else:
+            return ((self.x1 + self.w + ox), (self.y1 + self.h + oy))
 
     def _trim(self, sz = None):
         if sz is not None:
