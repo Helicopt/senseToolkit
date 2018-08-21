@@ -252,13 +252,14 @@ class VidDet(object): #general Det of Video
         res = Det(x1,y1,w,h, **kwargs)
         return res
 
-    def dump(self, fd, formatter = 'MOT16'):
+    def dump(self, fd, formatter = 'MOT16', filter = None):
         if formatter=='MOT16':
             formatter = 'fr.i,id.i,x1,y1,w,h,-1,st.i,-1,-1'
         items = re.split('[,\\s]+', formatter.strip())
         for i in self.frameRange():
             one = self[i]
             for dt in one:
+                if filter is not None and not filter(dt): continue
                 tmp = ''
                 for i, k in enumerate(items):
                     tp = str
@@ -288,7 +289,7 @@ class VidDet(object): #general Det of Video
                         tmp = tmp + ',%s'%v
                 fd.write(tmp+'\n')
 
-    def toJson(self, frfirst = False):
+    def toJson(self, frfirst = False, filter = None):
         js = {}
         if frfirst:
             for i in self.frameRange():
@@ -296,6 +297,7 @@ class VidDet(object): #general Det of Video
                 js['%06d'%i] = tmp
                 one = self[i]
                 for it in one:
+                    if filter is not None and not filter(it): continue
                     tmp['%02d'%it.uid] = [it.x1, it.y1, it.x2, it.y2]
             
         else:
@@ -306,6 +308,7 @@ class VidDet(object): #general Det of Video
                 for i in one.frameRange():
                     if len(one[i]):
                         it = one[i][0]
+                        if filter is not None and not filter(it): continue
                         tmp['%06d'%i] = [it.x1, it.y1, it.x2, it.y2]
         return js
 
