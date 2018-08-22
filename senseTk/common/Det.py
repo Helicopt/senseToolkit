@@ -95,17 +95,16 @@ class Det(object):
     #         self.cy = (self.y1 + self.y2)/2
     #         self.__free__ = False
 
-    def area(self):
     '''
     def area(self):
         w = max(self.w, 0)
         h = max(self.h, 0)
         return w*h
     '''
+    def area(self):
         return F.c_area(self.w, self.h)
         
     
-    def intersection(self, o):
     '''
     def intersection(self, o):
         mx1 = max(self.x1, o.x1)
@@ -116,23 +115,24 @@ class Det(object):
         iy = (my2 - my1) if (my2 - my1 > 0) else 0
         return ix*iy
     '''
+    def intersection(self, o):
         return F.c_intersection(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
 
 
-    def union(self, o):
     '''
     def union(self, o):
         return self.area() + o.area() - self.intersection(o)
     '''
+    def union(self, o):
         return F.c_union(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
 
 
-    def iou(self, o):
     '''
     def iou(self, o):
         intersect = self.intersection(o)
         return intersect * 1. / (self.area() + o.area() - intersect);
     '''
+    def iou(self, o):
         return F.c_iou(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
 
 
