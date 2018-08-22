@@ -95,17 +95,18 @@ class Det(object):
     #         self.cy = (self.y1 + self.y2)/2
     #         self.__free__ = False
 
-    def c_area(self):
-        return F.c_area(self.w, self.h)
-        
+    def area(self):
+    '''
     def area(self):
         w = max(self.w, 0)
         h = max(self.h, 0)
         return w*h
+    '''
+        return F.c_area(self.w, self.h)
+        
     
-    def c_intersection(self, o):
-        return F.c_intersection(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
-
+    def intersection(self, o):
+    '''
     def intersection(self, o):
         mx1 = max(self.x1, o.x1)
         my1 = max(self.y1, o.y1)
@@ -114,19 +115,26 @@ class Det(object):
         ix = (mx2 - mx1) if (mx2 - mx1 > 0) else 0
         iy = (my2 - my1) if (my2 - my1 > 0) else 0
         return ix*iy
+    '''
+        return F.c_intersection(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
 
-    def c_union(self, o):
-        return F.c_union(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
 
     def union(self, o):
+    '''
+    def union(self, o):
         return self.area() + o.area() - self.intersection(o)
+    '''
+        return F.c_union(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
 
-    def c_iou(self, o):
-        return F.c_iou(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
 
+    def iou(self, o):
+    '''
     def iou(self, o):
         intersect = self.intersection(o)
         return intersect * 1. / (self.area() + o.area() - intersect);
+    '''
+        return F.c_iou(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
+
 
     def lt(self, ox = 0, oy = 0, trim = True):
         if trim:
@@ -143,10 +151,10 @@ class Det(object):
     def _trim(self, sz = None):
         if sz is not None:
             w, h = sz
-            self.x1 = max(self.x1, 0)
-            self.y1 = max(self.y1, 0)
-            self.w = min(self.w, w-self.x1)
-            self.h = min(self.h, h-self.y1)
+            self.x1 = F.c_fmax(self.x1, 0)
+            self.y1 = F.c_fmax(self.y1, 0)
+            self.w = F.c_fmin(self.w, w-self.x1)
+            self.h = F.c_fmin(self.h, h-self.y1)
         self.x1, self.y1, self.w, self.h = map(int, self.toList())
         return self
 
