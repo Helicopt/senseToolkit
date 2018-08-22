@@ -151,10 +151,10 @@ class Det(object):
     def _trim(self, sz = None):
         if sz is not None:
             w, h = sz
-            self.x1 = F.c_fmax(self.x1, 0)
-            self.y1 = F.c_fmax(self.y1, 0)
-            self.w = F.c_fmin(self.w, w-self.x1)
-            self.h = F.c_fmin(self.h, h-self.y1)
+            self.x1 = max(self.x1, 0)
+            self.y1 = max(self.y1, 0)
+            self.w = min(self.w, w-self.x1)
+            self.h = min(self.h, h-self.y1)
         self.x1, self.y1, self.w, self.h = map(int, self.toList())
         return self
 
