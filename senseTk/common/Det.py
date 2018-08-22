@@ -8,6 +8,7 @@
 #########################################################################
 import copy
 import re
+import senseTk.extension.functional as F
 
 class Det(object):
 
@@ -93,12 +94,18 @@ class Det(object):
     #         self.cx = (self.x1 + self.x2)/2
     #         self.cy = (self.y1 + self.y2)/2
     #         self.__free__ = False
+
+    def c_area(self):
+        return F.c_area(self.w, self.h)
         
     def area(self):
         w = max(self.w, 0)
         h = max(self.h, 0)
         return w*h
     
+    def c_intersection(self, o):
+        return F.c_intersection(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
+
     def intersection(self, o):
         mx1 = max(self.x1, o.x1)
         my1 = max(self.y1, o.y1)
@@ -108,8 +115,14 @@ class Det(object):
         iy = (my2 - my1) if (my2 - my1 > 0) else 0
         return ix*iy
 
+    def c_union(self, o):
+        return F.c_union(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
+
     def union(self, o):
         return self.area() + o.area() - self.intersection(o)
+
+    def c_iou(self, o):
+        return F.c_iou(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
 
     def iou(self, o):
         intersect = self.intersection(o)

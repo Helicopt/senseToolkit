@@ -7,10 +7,11 @@
 # Created Time: 2018年07月27日 星期五 11时58分11秒
 #########################################################################
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 from distutils.version import LooseVersion, StrictVersion
+# from distutils.core import setup, Extension
 
-__version__ = '0.3.6'
+__version__ = '0.3.7'
 
 __required__ = [
             'numpy>=1.12.1',
@@ -33,7 +34,8 @@ setup(
     url = 'https://github.com/Helicopt/senseToolkit',
     license = 'MIT',
     install_requires = required,
-    packages = find_packages()
+    packages = find_packages(),
+    ext_modules=[Extension('senseTk.extension.functional', sources=['./senseTk/extension/functional/functional.cpp'])]
 )
 
 if __name__=='__main__':
