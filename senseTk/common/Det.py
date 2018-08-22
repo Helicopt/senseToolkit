@@ -148,19 +148,19 @@ class Det(object):
         else:
             return ((self.x1 + self.w + ox), (self.y1 + self.h + oy))
 
-    def _trim(self, sz = None):
+    def _trim(self, sz = None, toInt = True):
         if sz is not None:
             w, h = sz
             self.x1 = max(self.x1, 0)
             self.y1 = max(self.y1, 0)
             self.w = min(self.w, w-self.x1)
             self.h = min(self.h, h-self.y1)
-        self.x1, self.y1, self.w, self.h = map(int, self.toList())
+        if toInt: self.x1, self.y1, self.w, self.h = map(int, self.toList())
         return self
 
-    def trim(self, sz = None):
+    def trim(self, sz = None, toInt = True):
         ret = copy.copy(self)
-        return ret._trim(sz)
+        return ret._trim(sz, toInt = toInt)
 
     def _astype(self, dtype):
         self.x1, self.y1, self.w, self.h = map(dtype, self.toList())
