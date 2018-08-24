@@ -65,7 +65,7 @@ class IMGallery(QWidget):
 			self._cache = True
 
 	def renewPosBar(self, x, y, ox, oy, etype):
-		content = 'POS: %d %d, ORIGIN_POS: %d %d\nLAST_POS: %d %d, W: %d, H: %d'\
+		content = 'POS:\n%d %d\n\nORIGIN_POS:\n%d %d\n\nLAST_POS:\n%d %d\n\nW: %d, H: %d'\
 		%(x, y, ox, oy, self.pcx, self.pcy, ox - self.pcx, oy - self.pcy)
 		if etype==IMGallery.E_MPRESS:
 			self.pcx = ox
@@ -81,18 +81,20 @@ class IMGallery(QWidget):
 		nextButton = QPushButton('Next')
 		disButton = QPushButton('/')
 		freshButton = QPushButton('Refresh')
+		collapseButton = QPushButton('Collapse')
 		infoPan = QTextEdit()
 		posBar = QLabel()
 		self.prevButton = prevButton
 		self.nextButton = nextButton
 		self.disButton = disButton
 		self.freshButton = freshButton
+		self.collapseButton = collapseButton
 		self.infoPanel = infoPan
 		self.posBar = posBar
 
 		self.imgLabel = QLabel()
 		# print dir(self.imgLabel)
-		self.imgLabel.setMinimumWidth(max(int(size[0]*0.8), 0))
+		self.imgLabel.setMinimumWidth(max(self.size[0] - max(size[0]/5, 120), 0))
 		self.imgLabel.setAlignment(QtCore.Qt.AlignVCenter|QtCore.Qt.AlignHCenter)
 		self.ind = ind
 		self.__preclick = 0
@@ -100,6 +102,7 @@ class IMGallery(QWidget):
 		self.pcy = 0
 		self.last_scale = 1.
 		self.img_size = (0, 0)
+		self.infoStatus = True
 
 		infoPan.setMinimumHeight(self.size[1]/2)
 		infoPan.setMinimumWidth(self.size[0]/5)
@@ -110,8 +113,10 @@ class IMGallery(QWidget):
 		subvb.addWidget(infoPan)
 
 		posBar.setText('- -')
+		posBar.setMinimumWidth(120)
 
 		vbox.addLayout(subvb)
+		vbox.addWidget(collapseButton)
 		vbox.addStretch(1)
 		vbox.addWidget(posBar)
 		vbox.addWidget(disButton)
@@ -126,12 +131,16 @@ class IMGallery(QWidget):
 		hbox.addWidget(self.imgLabel)
 		hbox.addLayout(vbox)
 
+		hbox.setStretch(0,1)
 		self.setLayout(hbox)
+
+		self.navi = vbox
 
 		self.prevButton.clicked.connect(self.S_prev)
 		self.nextButton.clicked.connect(self.S_next)
 		self.disButton.clicked.connect(self.S_fromhead)
 		self.freshButton.clicked.connect(self.S_refresh)
+		self.collapseButton.clicked.connect(self.S_collapse)
 
 		# print(dir(self.imgLabel))
 		def gen_me(tp):
@@ -242,6 +251,24 @@ class IMGallery(QWidget):
 
 	def S_fromtail(self, offset = 0):
 		self.ind = len(self.data) - 1 - offset
+		self.refresh()
+
+	def S_collapse(self, *args, **kwargs):
+		status = kwargs['status'] if 'status' in kwargs else None
+		if status==None:
+			self.infoStatus = not self.infoStatus
+		else:
+			self.infoStatus = status
+		if self.infoStatus:
+			self.infoPanel.show()
+			self.imgLabel.setMinimumWidth(max(self.size[0] - max(self.size[0]/5, 120), 0))
+			self.collapseButton.setText('Collapse')
+		else:
+			self.infoPanel.hide()
+			self.imgLabel.setMinimumWidth(max(self.size[0] - 120, 0))
+			self.collapseButton.setText('Extend')
+		self.resize(0,0)
+		self.resize(*self.size)
 		self.refresh()
 
 	def keyPressEvent(self, e):
