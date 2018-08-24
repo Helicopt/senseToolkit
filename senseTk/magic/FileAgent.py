@@ -324,6 +324,9 @@ def getFile(x):
 	else:
 		return parse4Local(x)
 
+__all__ = ['getFile', 'parse4Local', 'parse4Ftp', 'parse4Http',
+			'suitHttp', 'suitFtp', 'httpFile', 'ftpFile',
+			'localFile', 'quickFtpCon']
 
 # if __name__=='__main__':
 # 	fn = 'ftp://10.1.30.165:2121/motmetrics/mot.py'

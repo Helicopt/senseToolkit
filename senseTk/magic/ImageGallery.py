@@ -68,19 +68,29 @@ class IMGallery(QWidget):
 		nextButton = QPushButton('Next')
 		disButton = QPushButton('/')
 		freshButton = QPushButton('Refresh')
+		infoPan = QTextEdit()
 		self.prevButton = prevButton
 		self.nextButton = nextButton
 		self.disButton = disButton
 		self.freshButton = freshButton
+		self.infoPanel = infoPan
 
 		self.imgLabel = QLabel()
 		# print dir(self.imgLabel)
-		self.imgLabel.setMinimumWidth(max(size[0]-40, 0))
+		self.imgLabel.setMinimumWidth(max(int(size[0]*0.8), 0))
 		self.imgLabel.setAlignment(QtCore.Qt.AlignVCenter|QtCore.Qt.AlignHCenter)
 		self.ind = ind
 		self.__preclick = 0
 
+		infoPan.setMinimumHeight(self.size[1]/2)
+		infoPan.setMinimumWidth(self.size[0]/5)
+		infoPan.setReadOnly(True)
+
 		vbox = QVBoxLayout()
+		subvb = QVBoxLayout()
+		subvb.addWidget(infoPan)
+
+		vbox.addLayout(subvb)
 		vbox.addStretch(1)
 		vbox.addWidget(disButton)
 		vbox.addWidget(prevButton)
@@ -143,7 +153,7 @@ class IMGallery(QWidget):
 	def refresh(self, update = False):
 		label, im = self.__gain(self.ind, update)
 		if callable(self.callback):
-			self.callback(im, self.ind)
+			self.callback(im, self.ind, type='refresh', info=self.infoPanel)
 		self.setWindowTitle('IMGallery' + '  -  ' + self.__adjustStr(label))
 		im = cv2.resize(im, self.__adjustImSize(im))
 		im = getQImg(im)
@@ -203,3 +213,7 @@ class IMGallery(QWidget):
 			self.S_next(d=25)
 		if e.key() == QtCore.Qt.Key_Q:
 			self.close()
+
+if __name__=='__main__':
+	requireQA()
+	IMGallery([np.zeros((1080,1920,3), dtype='uint8')]).show()
