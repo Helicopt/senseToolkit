@@ -11,7 +11,7 @@ from setuptools import setup, find_packages, Extension
 from distutils.version import LooseVersion, StrictVersion
 # from distutils.core import setup, Extension
 
-__version__ = '0.3.9'
+__version__ = '0.4.0'
 
 __required__ = [
             'numpy>=1.12.1',

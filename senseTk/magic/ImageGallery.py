@@ -37,6 +37,11 @@ def requireQA():
 
 class IMGallery(QWidget):
 
+	E_REFRESH = 1
+	E_HOVER = 2
+	E_MPRESS = 3
+	E_MRELEASE = 4
+
 	def __init__(self, data, ind = 0, top_left = (0, 0), size = (1600, 900), cache = True):
 		super(IMGallery, self).__init__()
 		global IMGAapp
@@ -59,6 +64,14 @@ class IMGallery(QWidget):
 		else:
 			self._cache = True
 
+	def renewPosBar(self, x, y, ox, oy, etype):
+		content = 'POS: %d %d, ORIGIN_POS: %d %d\nLAST_POS: %d %d, W: %d, H: %d'\
+		%(x, y, ox, oy, self.pcx, self.pcy, ox - self.pcx, oy - self.pcy)
+		if etype==IMGallery.E_MPRESS:
+			self.pcx = ox
+			self.pcy = oy
+		self.posBar.setText(content)
+
 	def __initGUI(self, ind, top_left, size):
 		self.resize(*size)
 		self.move(*top_left)
@@ -69,11 +82,13 @@ class IMGallery(QWidget):
 		disButton = QPushButton('/')
 		freshButton = QPushButton('Refresh')
 		infoPan = QTextEdit()
+		posBar = QLabel()
 		self.prevButton = prevButton
 		self.nextButton = nextButton
 		self.disButton = disButton
 		self.freshButton = freshButton
 		self.infoPanel = infoPan
+		self.posBar = posBar
 
 		self.imgLabel = QLabel()
 		# print dir(self.imgLabel)
@@ -81,6 +96,10 @@ class IMGallery(QWidget):
 		self.imgLabel.setAlignment(QtCore.Qt.AlignVCenter|QtCore.Qt.AlignHCenter)
 		self.ind = ind
 		self.__preclick = 0
+		self.pcx = 0
+		self.pcy = 0
+		self.last_scale = 1.
+		self.img_size = (0, 0)
 
 		infoPan.setMinimumHeight(self.size[1]/2)
 		infoPan.setMinimumWidth(self.size[0]/5)
@@ -90,8 +109,11 @@ class IMGallery(QWidget):
 		subvb = QVBoxLayout()
 		subvb.addWidget(infoPan)
 
+		posBar.setText('- -')
+
 		vbox.addLayout(subvb)
 		vbox.addStretch(1)
+		vbox.addWidget(posBar)
 		vbox.addWidget(disButton)
 		vbox.addWidget(prevButton)
 		vbox.addWidget(nextButton)
@@ -110,6 +132,26 @@ class IMGallery(QWidget):
 		self.nextButton.clicked.connect(self.S_next)
 		self.disButton.clicked.connect(self.S_fromhead)
 		self.freshButton.clicked.connect(self.S_refresh)
+
+		# print(dir(self.imgLabel))
+		def gen_me(tp):
+			def mme(e):
+				# print(dir(e))
+				# print self.imgLabel.width(), self.img_size[0], self.imgLabel.height(), self.img_size[1]
+				px = e.x() - (self.imgLabel.width() - self.img_size[0])//2
+				py = e.y() - (self.imgLabel.height() - self.img_size[1])//2
+				xx = int(px*self.last_scale)
+				yy = int(py*self.last_scale)
+				self.renewPosBar(px, py, xx, yy, tp)
+				if callable(self.callback):
+					self.callback(None, self.ind, type=tp, info = infoPan,
+						x = px, y = py,
+						origin_x = xx, origin_y = yy)
+			return mme
+		self.imgLabel.setMouseTracking(True)
+		self.imgLabel.mouseMoveEvent = gen_me(IMGallery.E_HOVER)
+		self.imgLabel.mousePressEvent = gen_me(IMGallery.E_MPRESS)
+		self.imgLabel.mouseReleaseEvent = gen_me(IMGallery.E_MRELEASE)
 
 		return self
 
@@ -145,17 +187,19 @@ class IMGallery(QWidget):
 	def __adjustImSize(self, im):
 		# rate = im.shape[0]*1./im.shape[1]
 		mi = 1.
-		mi = max(mi, im.shape[1]*1./self.size[0])
-		mi = max(mi, im.shape[0]*1./self.size[1])
+		mi = max(mi, im.shape[1]*1./self.imgLabel.width())
+		mi = max(mi, im.shape[0]*1./self.imgLabel.height())
+		self.last_scale = mi
 		return int(im.shape[1]/mi), int(im.shape[0]/mi)
 		# return cv2.resize(im, (int(im.shape[1]/mi), int(im.shape[0]/mi)))
 
 	def refresh(self, update = False):
 		label, im = self.__gain(self.ind, update)
 		if callable(self.callback):
-			self.callback(im, self.ind, type='refresh', info=self.infoPanel)
+			self.callback(im, self.ind, type=IMGallery.E_REFRESH, info=self.infoPanel)
 		self.setWindowTitle('IMGallery' + '  -  ' + self.__adjustStr(label))
-		im = cv2.resize(im, self.__adjustImSize(im))
+		self.img_size = self.__adjustImSize(im)
+		im = cv2.resize(im, self.img_size)
 		im = getQImg(im)
 		self.imgLabel.setPixmap(im)
 		self.disButton.setText('%d/%d'%(self.ind, len(self.data)))
