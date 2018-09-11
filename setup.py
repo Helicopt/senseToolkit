@@ -21,7 +21,7 @@ required = __required__
 try:
     import cv2
     print 'Searching for cv2==%s'%cv2.__version__
-    assert StrictVersion(cv2.__version__)>=StrictVersion('2.4.10')
+    assert LooseVersion(cv2.__version__)>=LooseVersion('2.4.10')
     print 'Best match: cv2 %s'%cv2.__version__
 except ImportError, AssertionError:
     required.append('cv2>=2.4.10')
