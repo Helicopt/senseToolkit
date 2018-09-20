@@ -51,6 +51,16 @@ default_gt_search_config = \
 	"delimiter": " "
 }
 
+def make_gt_config(seqName = '', fmt = '', delimiter = ''):
+	ret = {}
+	ret.update(default_gt_search_config)
+	if seqName!='':
+		ret['Prefix'] = seqName
+	if fmt!='':
+		ret['fmt'] = fmt
+	if delimiter!='':
+		ret['delimiter'] = delimiter
+	return ret
 
 class gtSearcher(object):
 	"""docstring for Searcher"""

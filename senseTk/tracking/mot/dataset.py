@@ -10,6 +10,7 @@ import logging
 import os
 import cv2
 from senseTk.magic import *
+from senseTk.common import *
 import json
 import re
 
@@ -119,11 +120,10 @@ def make_dataset(data, destination, args = None):
 			fd.write(x+'\n')
 		fd.close()
 		fd = open(one_path+'seqinfo.ini', 'w')
-		vid = cv2.VideoCapture(v[1])
-		seqlen = int(vid.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
-		imW = int(vid.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
-		imH = int(vid.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
-		fps = vid.get(cv2.cv.CV_CAP_PROP_FPS)
+		vid = VideoClipReader(v[1])
+		seqlen = int(vid.length())
+		imW, imH = vid.ImgSize()
+		fps = vid.fps()
 		logger.info('seqlen: %d w %d h %d fps: %g'%(seqlen, imW, imH, fps))
 		vid.release()
 		fd.write(
