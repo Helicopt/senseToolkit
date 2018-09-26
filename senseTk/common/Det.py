@@ -307,7 +307,7 @@ class VidDet(object): #general Det of Video
                     if k=='h': v = dt.h
                     if k=='la': v = dt.label
                     if k=='st': v = dt.status
-                    if k=='cf': v = dt.confidence
+                    if k=='cf': v = dt.conf
                     v = tp(v)
                     if i==0:
                         tmp = tmp + '%s'%v
