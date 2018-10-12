@@ -2,6 +2,8 @@ import os
 
 def initLoader(cur, global_dict, class_name = '__auto__', disable_module = True):
     root = os.path.dirname(os.path.abspath(cur))
+    if cur[0]=='/':
+        cur = cur[len(os.getcwd())+1:]
     if cur[-11:]=='__init__.py' or cur[-12:]=='__init__.pyc':
         path = os.path.dirname(cur).replace('/', '.')
     else:
@@ -17,7 +19,10 @@ def initLoader(cur, global_dict, class_name = '__auto__', disable_module = True)
         os.path.exists(os.path.join(root, f, '__init__.py')):
             mname = f
         if mname!='':
-            __import__('%s.%s'%(path, mname))
+            try:
+                __import__('%s.%s'%(path, mname))
+            except:
+                raise Exception('module not exists: [%s.%s], package %s'%(path, mname, cur))
             if class_name == '__auto__':
                 cn = mname
             else:
