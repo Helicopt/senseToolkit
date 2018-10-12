@@ -13,3 +13,4 @@ except:
 from FileAgent import *
 from GridSearch import gridSearcher, OrderedDict
 from gtSearcher import gtSearcher, default_gt_search_config, make_gt_config
+from pyAutoLoader import initLoader
