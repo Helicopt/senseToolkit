@@ -21,7 +21,7 @@ def initLoader(cur, global_dict, class_name = '__auto__', disable_module = True)
         if mname!='':
             try:
                 __import__('%s.%s'%(path, mname))
-            except:
+            except ValueError:
                 raise Exception('module not exists: [%s.%s], package %s'%(path, mname, cur))
             if class_name == '__auto__':
                 cn = mname
