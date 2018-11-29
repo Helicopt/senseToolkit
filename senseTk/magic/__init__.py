@@ -7,11 +7,10 @@
 # Created Time: 2018年07月27日 星期五 12时31分26秒
 #########################################################################
 
-from .ImageGallery import IMGallery, requireQA
-#try:
-#    from .ImageGallery import IMGallery, requireQA
-#except:
-#    pass
+try:
+    from .ImageGallery import IMGallery, requireQA
+except:
+    pass
 from .FileAgent import *
 from .GridSearch import gridSearcher, OrderedDict
 from .gtSearcher import gtSearcher, default_gt_search_config, make_gt_config
