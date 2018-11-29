@@ -6,4 +6,4 @@
 # mail: fengweitao@sensetime.com
 # Created Time: 2018年08月01日 星期三 18时17分19秒
 #########################################################################
-from dataset import make_dataset
+from .dataset import make_dataset

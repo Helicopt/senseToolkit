@@ -118,6 +118,29 @@ extMethods[] = {
 	{NULL, NULL}
 };
 
+#if PY_MAJOR_VERSION >= 3
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "functional",
+        NULL,
+        -1,
+        extMethods,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+#endif
+
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC
+PyInit_functional(void) {
+    PyObject *module = PyModule_Create(&moduledef);
+	return module;
+#else
 PyMODINIT_FUNC initfunctional() {
 	Py_InitModule("functional", extMethods);
+#endif
 }

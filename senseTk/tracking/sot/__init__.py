@@ -6,4 +6,4 @@
 # mail: fengweitao@sensetime.com
 # Created Time: 2018年08月02日 星期四 19时23分06秒
 #########################################################################
-from preprocess import *
+from .preprocess import *

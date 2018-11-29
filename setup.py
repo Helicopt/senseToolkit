@@ -11,19 +11,20 @@ from setuptools import setup, find_packages, Extension
 from distutils.version import LooseVersion, StrictVersion
 # from distutils.core import setup, Extension
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 __required__ = [
             'numpy>=1.12.1',
-            'qimage2ndarray>=1.6'
+            'qimage2ndarray>=1.6',
+            'six'
         ]
 required = __required__
 try:
     import cv2
-    print 'Searching for cv2==%s'%cv2.__version__
+    print('Searching for cv2==%s'%cv2.__version__)
     assert LooseVersion(cv2.__version__)>=LooseVersion('2.4.10')
-    print 'Best match: cv2 %s'%cv2.__version__
-except ImportError, AssertionError:
+    print('Best match: cv2 %s'%cv2.__version__)
+except(ImportError, AssertionError):
     required.append('cv2>=2.4.10')
 
 setup(

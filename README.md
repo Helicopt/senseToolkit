@@ -11,39 +11,41 @@ git clone git@gitlab.bj.sensetime.com:fengweitao/senseToolkit.git
 Neccessary:
 - opencv>=2.4.10
 - numpy>=1.12.1
+- six
 
 IMGallery optional:
 - qimage2ndarray>=1.6
-- PyQt4
+- PyQt5
 
 ## Local build(with sudo)
 ```sh
 cd senseToolkit
-sudo python2 setup.py build install
+sudo python setup.py build install
 ```
 
 ## Server build(without sudo)
 ```sh
 cd senseToolkit
-alias py=/your_local_virtualenv/bin/python2
+alias py=/your_local_python/bin/python
 py setup.py build install
 ```
 
 ## Notes
 If cannot find the package, try to add the egg file to your pythonpath
 
-i.e., export PYTHONPATH=$PYTHONPATH:/installed_place/senseToolkit-[version]-[arch].egg
+i.e., export PYTHONPATH=$PYTHONPATH:/installed\_place/senseToolkit-[version]-[arch].egg
 
-***Now it is only in python2***
+***Now it can be used in both python2 and python3***
 
 ## Apps
 ```sh
-python2 -m senseTk.apps.visualize
-usage: python2 -m senseTk.apps.visualize [-h] [--ifmt IFMT] [--istart ISTART]
-                     [--trackset TRACKSET]
-                     src
-python2 -m senseTk.apps.VI
-usage: python2 -m senseTk.apps.VI [-h] [-t {auto,img,video}] [-i] [--ifmt IFMT] 
+python -m senseTk.apps.visualize
+usage: python -m senseTk.apps.visualize [-h] [--ifmt IFMT] [--istart ISTART]
+                    [--trackset TRACKSET] [--format {MOT,MOTwithScore}]
+                    src
+
+python -m senseTk.apps.VI
+usage: python -m senseTk.apps.VI [-h] [-t {auto,img,video}] [-i] [--ifmt IFMT] 
 			  [--istart ISTART] [--ofmt OFMT] [--ostart OSTART]
               source destination
 ```
@@ -159,13 +161,13 @@ def __init__(self, fn = None, dealer = None, filter = None, formatter = None):
 
   returns a list contrains all frame numbers
 
-- append_data(det)
+- append\_data(det)
 
   append a new det into trackset
 
 - frameRange()
 
-  return a list of [minimum_fr, ..., maximum_fr]
+  return a list of [minimum\_fr, ..., maximum\_fr]
 
 - dump(fd, formatter = 'MOT16', filter = None)
 

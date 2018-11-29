@@ -6,4 +6,4 @@
 # mail: fengweitao@sensetime.com
 # Created Time: 2018年07月27日 星期五 12时31分00秒
 #########################################################################
-import mot
+from . import mot

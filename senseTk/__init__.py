@@ -7,8 +7,8 @@
 # Created Time: 2018年07月27日 星期五 12时22分05秒
 #########################################################################
 
-import common
-import tracking
-import magic
+from . import common
+from . import tracking
+from . import magic
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'

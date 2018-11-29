@@ -7,6 +7,21 @@
 # Created Time: 2018年07月27日 星期五 14时34分28秒
 #########################################################################
 import cv2
+class FakeCV2(object):
+
+    def __init__(self, cvx):
+        self.CV_CAP_PROP_FPS = cvx.CAP_PROP_FPS
+        self.CV_CAP_PROP_FRAME_COUNT = cvx.CAP_PROP_FRAME_COUNT
+        self.CV_CAP_PROP_POS_FRAMES = cvx.CAP_PROP_POS_FRAMES
+        self.CV_CAP_PROP_FRAME_WIDTH = cvx.CAP_PROP_FRAME_WIDTH
+        self.CV_CAP_PROP_FRAME_HEIGHT = cvx.CAP_PROP_FRAME_HEIGHT
+        self.CV_CAP_PROP_POS_AVI_RATIO = cvx.CAP_PROP_POS_AVI_RATIO
+        self.CV_FOURCC = cvx.VideoWriter_fourcc
+
+try:
+    cv2.cv
+except AttributeError as e:
+    cv2.cv = FakeCV2(cv2)
 from cv2 import VideoCapture
 from cv2 import VideoWriter
 import os

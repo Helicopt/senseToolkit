@@ -26,7 +26,7 @@ gridsearch_stream_handler = logging.StreamHandler()
 gridsearch_stream_handler.setLevel(USERLOG)
 gridsearch_stream_handler.setFormatter(gridsearch_formatter)
 
-from bigBitset import BigBitSet
+from .bigBitset import BigBitSet
 
 def OrderedDict(x = None):
 	if x is None:

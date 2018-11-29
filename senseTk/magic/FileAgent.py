@@ -6,7 +6,13 @@
 # mail: fengweitao@sensetime.com
 # Created Time: 2018年07月29日 星期日 18时54分08秒
 #########################################################################
-import httplib
+import six
+if six.PY2:
+    import httplib
+    import urlparse
+elif six.PY3:
+    import http.client as httplib
+    from urllib.parse import urlparse
 import ftplib
 import os
 import cv2
@@ -14,7 +20,6 @@ from re import *
 from copy import copy
 import tempfile
 import time
-import urlparse
 
 img_exts = ['png', 'jpg', 'jpeg', 'bmp', 'tiff']
 
@@ -94,7 +99,7 @@ class ftpFile(object):
 			self.__mod = arr[0]
 			self.__size = int(arr[4])
 			self.__time = arr[5]+' '+arr[6]+' '+arr[7]
-		except ftplib.error_perm, e:
+		except(ftplib.error_perm) as e:
 			self.FileStr = ''
 			def parseFileLine(x):
 				self.FileStr = x
