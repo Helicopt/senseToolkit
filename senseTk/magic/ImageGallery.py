@@ -292,6 +292,8 @@ class IMGallery(QWidget):
             self.S_next(d=25)
         if e.key() == QtCore.Qt.Key_Q:
             self.close()
+        if e.key() == QtCore.Qt.Key_H:
+            exit()
 
 if __name__=='__main__':
     requireQA()
