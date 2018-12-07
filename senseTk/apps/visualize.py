@@ -41,7 +41,7 @@ if __name__=='__main__':
                 txt = ''
                 for dt in g[ind+g.min_fr]:
                     drawOnImg(im, dt, conf = (args.format!='MOT'))
-                    txt+='%d %d] %d %d %d %d %.3f (%d) \{%s\}\n'%(dt.fr, dt.uid, dt.x1, dt.y1, dt.w, dt.h, dt.conf, dt.status, dt.label)
+                    txt+='%d %d] %d %d %d %d %.3f (%d) {%s}\n'%(dt.fr, dt.uid, dt.x1, dt.y1, dt.w, dt.h, dt.conf, dt.status, dt.label)
                 kwargs['info'].setText(txt)
         t = IMGallery(a).show(cb)
     else:
