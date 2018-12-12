@@ -19,7 +19,7 @@ if __name__=='__main__':
     parser.add_argument('--istart', default=1, type=int, help = 'input imgset start offset')
     parser.add_argument('--trackset', default='', type=str, help = 'file recording tracklets')
     parser.add_argument('--format', '-f', default='MOT', type=str, choices = ['MOT', 'MOTwithScore', 'Label', 'Detect'], help = 'trackset format')
-    parser.add_argument('--filter', '-F', default=0., type=float, help = 'filtering confidence (only show larger than threshold)')
+    parser.add_argument('--filter', '-F', default=-2., type=float, help = 'filtering confidence (only show larger than threshold)')
     args = parser.parse_args()
     if args.ifmt=='':
         a = VideoClipReader(args.src, start = args.istart)
