@@ -28,6 +28,15 @@ def drawOnImg(im, D, color = (255,0,0), bold = 0.5, stamp = False, conf = False)
 		cv2.putText(im, '%.2f'%D.conf, D.lt(2, offset), cv2.FONT_HERSHEY_DUPLEX, bold, color)
 		offset+=int(32*bold)
 
+def detCrop(im, d):
+	h, w = im.shape[:2]
+	d = d.trim((w, h))
+	if d.area()>1: return im[d.y1:d.y2, d.x1:d.x2]
+	return None
+
+def drawText(im, pos, s, bold = 0.5, color = (255,0,0), fm = cv2.FONT_HERSHEY_DUPLEX):
+	cv2.putText(im, s, pos, fm, bold, color)
+
 def alignTrackSet2Video(clip, track, start = 1, drawer = drawOnImg, action = None, dealer = None):
 	while True:
 		s, im = clip.read()
