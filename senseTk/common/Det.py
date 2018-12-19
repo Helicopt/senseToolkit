@@ -455,6 +455,20 @@ class VidDet(object): #general Det of Video
         self.min_fr = min(self.min_fr, D.fr)
         self.max_fr = max(self.max_fr, D.fr)
 
+    def delete(self, d):
+        if isinstance(list, d) or isinstance(tuple, d):
+            uid, fr = d
+        else:
+            uid, fr = d.uid, d.fr
+        for i, j in enumerate(self.frd[fr]):
+            if j.uid==uid:
+                del self.frd[fr][i]
+                break
+        for i, j in enumerate(self.ped[uid]):
+            if j.fr==fr:
+                del self.ped[uid][i]
+                break
+
     def __call__(self, ind):
         if ind in self.cache:
             return self.cache[ind]
