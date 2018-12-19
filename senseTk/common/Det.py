@@ -476,6 +476,7 @@ class VidDet(object): #general Det of Video
             del self.frd[fr]
         if len(self.ped[uid])==0:
             del self.ped[uid]
+            del self.cache[uid]
 
     def __call__(self, ind):
         if ind in self.cache:
