@@ -456,7 +456,7 @@ class VidDet(object): #general Det of Video
         self.max_fr = max(self.max_fr, D.fr)
 
     def delete(self, d):
-        if isinstance(list, d) or isinstance(tuple, d):
+        if isinstance(d, list) or isinstance(d, tuple):
             uid, fr = d
         else:
             uid, fr = d.uid, d.fr
