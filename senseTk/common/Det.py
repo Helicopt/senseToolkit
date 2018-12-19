@@ -454,6 +454,8 @@ class VidDet(object): #general Det of Video
         self.frd[D.fr].append(D)
         self.min_fr = min(self.min_fr, D.fr)
         self.max_fr = max(self.max_fr, D.fr)
+        if D.uid in self.cache:
+            self.cache[D.uid].append_data(D)
 
     def delete(self, d):
         if isinstance(d, list) or isinstance(d, tuple):
@@ -468,7 +470,8 @@ class VidDet(object): #general Det of Video
             if j.fr==fr:
                 del self.ped[uid][i]
                 break
-        if uid in self.cache: del self.cache[uid]
+        if uid in self.cache:
+            self.cache[uid].delete(d)
         if len(self.frd[fr])==0:
             del self.frd[fr]
         if len(self.ped[uid])==0:
