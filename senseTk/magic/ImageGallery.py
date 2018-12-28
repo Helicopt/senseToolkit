@@ -19,13 +19,16 @@ except ImportError:
     pass
 
 if six.PY2:
-    import urlparse
+    from urlparse import urlparse
 elif six.PY3:
     from urllib.parse import urlparse
 
 from math import *
 import time
+from time import sleep
 from . import FileAgent
+# import FileAgent
+import threading
 import numpy as np
 
 global IMGAapp
@@ -43,6 +46,68 @@ def requireQA():
     if IMGAapp is None:
         IMGAapp = QApplication([sys.argv[0]])
 
+class cacheWorker(threading.Thread):
+
+    def __init__(self, ctx):
+        super(cacheWorker, self).__init__()
+        self.ctx = ctx
+        self.n = len(ctx.data)
+        self.pre = -1
+        self.lock = threading.Lock()
+
+    def run(self):
+        ctx = self.ctx
+        while True:
+            # print('worker %s %d'%(ctx.cache, ctx.ind))
+            if ctx.cache:
+                be = max(ctx.ind - 50, 0)
+                en = min(ctx.ind + 51, self.n)
+                self.lock.acquire()
+                for i in range(be):
+                    ctx.imgcache[i] = None, None
+                for i in range(en, self.n):
+                    ctx.imgcache[i] = None, None
+                self.lock.release()
+                if ctx.ind!=self.pre:
+                    for i in range(be, en):
+                        _, one = ctx.imgcache[i]
+                        if one is None:
+                            udp = True
+                            self.lock.acquire()
+                            one = ctx.data[i]
+                            if isinstance(one, str):
+                                rs = urlparse(one)
+                                label = rs.scheme+'://'+rs.netloc+rs.path
+                                if ctx._cache:
+                                    if ctx.imgcache[i][1] is None:
+                                        ctx.imgcache[i] = label, FileAgent.getFile(one)
+                                    _, f = ctx.imgcache[i]
+                                else:
+                                    f = FileAgent.getFile(one)
+                                im = f.img(refresh = udp)
+                            elif isinstance(one, np.ndarray):
+                                label = 'nolabel'
+                                im = one
+                                if ctx._cache:
+                                    ctx.imgcache[i] = label, im
+                            elif callable(one):
+                                label, im = one(i)
+                                if ctx._cache:
+                                    ctx.imgcache[i] = label, im
+                            else:
+                                label = one.url
+                                im = one.img(refresh = udp)
+                                if ctx._cache:
+                                    ctx.imgcache[i] = label, im
+                            # ctx.imgcache[i] = label, one
+                            self.lock.release()
+                    self.pre = ctx.ind
+                else:
+                    sleep(1)
+            else:
+                break
+
+
 class IMGallery(QWidget):
 
     E_REFRESH = 1
@@ -55,11 +120,12 @@ class IMGallery(QWidget):
         global IMGAapp
         self.app = IMGAapp
         self.data = data
-        self.imgcache = [None] * len(self.data)
+        self.imgcache = [(None, None)] * len(self.data)
         self.size = size
         self.callback = None
-        self._cache = cache
+        self._cache = False
         self.__initGUI(ind, top_left, size)
+        self.cache = cache
 
     @property
     def cache(self):
@@ -67,10 +133,16 @@ class IMGallery(QWidget):
 
     @cache.setter
     def cache(self, value):
-        if val==False:
+        if value==self._cache:
+            return
+        if value==False:
             self._cache = False
         else:
             self._cache = True
+            self.cacheThread = cacheWorker(self)
+            if self._cache:
+                self.cacheThread.setDaemon(True)
+                self.cacheThread.start()
 
     def renewPosBar(self, x, y, ox, oy, etype):
         content = 'POS:\n%d %d\n\nORIGIN_POS:\n%d %d\n\nLAST_POS:\n%d %d\n\nW: %d, H: %d'\
@@ -173,26 +245,42 @@ class IMGallery(QWidget):
         return self
 
     def __gain(self, ind, udp = False):
-        one = self.data[ind]
-        if isinstance(one, str):
-            rs = urlparse.urlparse(one)
-            label = rs.scheme+'://'+rs.netloc+rs.path
+        im = None
+        if self._cache and not udp:
+            label, im = self.imgcache[ind]
+            if hasattr(im, 'img'):
+                im = im.img(refresh = False)
+        if im is None:
             if self._cache:
-                if self.imgcache[ind] is None:
-                    self.imgcache[ind] = FileAgent.getFile(one)
-                f = self.imgcache[ind]
+                self.cacheThread.lock.acquire()
+            one = self.data[ind]
+            if isinstance(one, str):
+                rs = urlparse(one)
+                label = rs.scheme+'://'+rs.netloc+rs.path
+                if self._cache:
+                    if self.imgcache[ind][1] is None:
+                        self.imgcache[ind] = label, FileAgent.getFile(one)
+                    _, f = self.imgcache[ind]
+                else:
+                    f = FileAgent.getFile(one)
+                im = f.img(refresh = udp)
+            elif isinstance(one, np.ndarray):
+                label = 'nolabel'
+                im = one
+                if self._cache:
+                    self.imgcache[ind] = label, im
+            elif callable(one):
+                label, im = one(ind)
+                if self._cache:
+                    self.imgcache[ind] = label, im
             else:
-                f = FileAgent.getFile(one)
-            im = f.img(refresh = udp)
-        elif isinstance(one, np.ndarray):
-            label = 'nolabel'
-            im = self.data[self.ind]
-        elif callable(one):
-            label, im = one(ind)
-        else:
-            label = one.url
-            im = one.img(refresh = udp)
-        return label, im
+                label = one.url
+                im = one.img(refresh = udp)
+                if self._cache:
+                    self.imgcache[ind] = label, im
+            if self._cache:
+                self.cacheThread.lock.release()
+        return label, im.copy() if self._cache else im
 
     def __adjustStr(self, x):
         mx = max(self.size[0] - 100, 0)>>3
@@ -211,6 +299,7 @@ class IMGallery(QWidget):
         # return cv2.resize(im, (int(im.shape[1]/mi), int(im.shape[0]/mi)))
 
     def refresh(self, update = False):
+        self.setFocus()
         label, im = self.__gain(self.ind, update)
         if callable(self.callback):
             self.callback(im, self.ind, type=IMGallery.E_REFRESH, info=self.infoPanel)
@@ -219,7 +308,7 @@ class IMGallery(QWidget):
         im = cv2.resize(im, self.img_size)
         im = getQImg(im)
         self.imgLabel.setPixmap(im)
-        self.disButton.setText('%d/%d'%(self.ind, len(self.data)))
+        self.disButton.setText('%d/%d'%(self.ind+1, len(self.data)))
 
     def show(self, callback = None):
         self.callback = callback
@@ -282,9 +371,9 @@ class IMGallery(QWidget):
     def keyPressEvent(self, e):
         # print e.key()
         # print [(i,QtCore.Qt.__dict__[i]) for i in dir(QtCore.Qt) if i[:4]=='Key_']
-        if e.key() == QtCore.Qt.Key_J:
+        if e.key() == QtCore.Qt.Key_J or e.key() == QtCore.Qt.Key_Left or e.key() == QtCore.Qt.Key_Up:
             self.S_prev()
-        if e.key() == QtCore.Qt.Key_L:
+        if e.key() == QtCore.Qt.Key_L or e.key() == QtCore.Qt.Key_Right or e.key() == QtCore.Qt.Key_Down:
             self.S_next()
         if e.key() == QtCore.Qt.Key_PageUp or e.key() == QtCore.Qt.Key_I:
             self.S_prev(d=25)
@@ -292,9 +381,9 @@ class IMGallery(QWidget):
             self.S_next(d=25)
         if e.key() == QtCore.Qt.Key_Q:
             self.close()
-        if e.key() == QtCore.Qt.Key_H:
+        if e.key() == QtCore.Qt.Key_Q and (e.modifiers() == QtCore.Qt.ControlModifier):
             exit()
 
 if __name__=='__main__':
     requireQA()
-    IMGallery([np.zeros((1080,1920,3), dtype='uint8')]).show()
+    IMGallery([np.zeros((1080,1920,3), dtype='uint8')]*10).show()

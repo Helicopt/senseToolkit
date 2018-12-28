@@ -9,7 +9,7 @@
 import six
 if six.PY2:
     import httplib
-    import urlparse
+    from urlparse import urlparse
 elif six.PY3:
     import http.client as httplib
     from urllib.parse import urlparse
@@ -218,7 +218,7 @@ class ftpFile(object):
 class httpFile(object):
 
 	def __init__(self, url, timeout = 10):
-		rs = urlparse.urlparse(url)
+		rs = urlparse(url)
 		self.host = rs.netloc
 		self.path = rs.path
 		self.url = rs.path+'?'+rs.query+'#'+rs.fragment
@@ -301,7 +301,7 @@ def suitHttp(x):
 	return x.strip()[:4]=='http'
 
 def parse4Ftp(x):
-	urlres = urlparse.urlparse(x)
+	urlres = urlparse(x)
 	# print urlres
 	# print urlres.scheme
 	# print urlres.netloc
