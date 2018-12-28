@@ -80,10 +80,18 @@ class cacheWorker(threading.Thread):
                                 label = rs.scheme+'://'+rs.netloc+rs.path
                                 if ctx._cache:
                                     if ctx.imgcache[i][1] is None:
-                                        ctx.imgcache[i] = label, FileAgent.getFile(one)
+                                        try:
+                                            ctx.imgcache[i] = label, FileAgent.getFile(one)
+                                        except:
+                                            sys.stderr.write('[failed] get %s error.\n'%label)
+                                            continue
                                     _, f = ctx.imgcache[i]
                                 else:
-                                    f = FileAgent.getFile(one)
+                                    try:
+                                        f = FileAgent.getFile(one)
+                                    except:
+                                        sys.stderr.write('[failed] get %s error.\n'%label)
+                                        continue
                                 im = f.img(refresh = udp)
                             elif isinstance(one, np.ndarray):
                                 label = 'nolabel'
