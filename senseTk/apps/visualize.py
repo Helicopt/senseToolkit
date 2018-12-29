@@ -39,7 +39,7 @@ if __name__=='__main__':
         def cb(im, ind, **kwargs):
             if kwargs['type']==IMGallery.E_REFRESH:
                 txt = ''
-                for dt in g[ind+g.min_fr]:
+                for dt in g[ind+1]:
                     drawOnImg(im, dt, conf = (args.format!='MOT'))
                     txt+='%d %d] %d %d %d %d %.3f (%d) {%s}\n'%(dt.fr, dt.uid, dt.x1, dt.y1, dt.w, dt.h, dt.conf, dt.status, dt.label)
                 kwargs['info'].setText(txt)
