@@ -11,7 +11,7 @@ from setuptools import setup, find_packages, Extension
 from distutils.version import LooseVersion, StrictVersion
 # from distutils.core import setup, Extension
 
-__version__ = '0.4.7'
+__version__ = '0.4.8'
 
 __required__ = [
             'numpy>=1.12.1',
@@ -26,6 +26,12 @@ try:
     print('Best match: cv2 %s'%cv2.__version__)
 except(ImportError, AssertionError):
     required.append('opencv-python>=2.4.10')
+
+try:
+    import PyQt5
+    print('Searching for PyQt5')
+except(ImportError, AssertionError):
+    print('Cannot find optional module PyQt5 or python-qt5, you need to install it before you use IMGallery module')
 
 setup(
     name = 'senseToolkit',

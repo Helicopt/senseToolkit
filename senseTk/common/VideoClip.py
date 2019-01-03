@@ -26,6 +26,7 @@ from cv2 import VideoCapture
 from cv2 import VideoWriter
 import os
 import math
+from senseTk.functions import autoPattern
 
 class ImgVideoCapture(object):
 
@@ -86,8 +87,17 @@ class ImgVideoCapture(object):
 
 class VideoClipReader(object):
 
-    def __init__(self, path, fmt = ImgVideoCapture.DEFAULT_FMT, start = 1):
+    def __init__(self, path, fmt = None, start = 1):
         if os.path.isdir(path):
+            if fmt is None:
+                try:
+                    tryfmt = autoPattern(path)
+                    if tryfmt is None:
+                        fmt = ImgVideoCapture.DEFAULT_FMT
+                    else:
+                        fmt = tryfmt
+                except Exception as e:
+                    fmt = ImgVideoCapture.DEFAULT_FMT
             self.backend = ImgVideoCapture(path, fmt, start)
         else:
             self.backend = VideoCapture(path)

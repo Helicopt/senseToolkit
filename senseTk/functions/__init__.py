@@ -8,6 +8,8 @@
 #########################################################################
 
 import cv2
+import re
+import os
 
 def streamForward(source, destination):
 	while True:
@@ -60,3 +62,85 @@ def cvWait():
 def cvShow(im, label = 'test'):
 	cv2.imshow(label, im)
 	cvWait()
+
+def autoPattern(path):
+    def guess(s):
+        d = ''
+        r = ''
+        e = []
+        for i in s:
+            if '0'<=i<='9':
+                d+=i
+            else:
+                if d!='':
+                    if d[0]=='0' and len(d)!=1:
+                        e.append('%%0%dd'%(len(d)))
+                    else:
+                        e.append('%d')
+                    r+='#d'
+                    d = ''
+                if i=='#':
+                    r+='##'
+                else:
+                    r+=i
+        if d!='':
+            if d[0]=='0' and len(d)!=1:
+                e.append('%%0%dd'%(len(d)))
+            else:
+                e.append('%d')
+            r+='#d'
+        return r, e
+    if isinstance(path, str):
+        if os.path.isfile(path):
+            return path
+        elif os.path.isdir(path):
+            fns = filter(lambda x: not re.match('^\.', x), os.listdir(path))
+    else:
+        fns = [i for i in path]
+    if True:
+        fmt = []
+        pre = ''
+        for i in fns:
+            r, e = guess(i)
+            fmt.append([r, e])
+            if pre!='' and len(e)!=len(pre):
+                return None
+            pre = e
+        for i in range(len(pre)):
+            tag = ''
+            for j in range(len(fmt)):
+                if fmt[j][1][i]!='%d':
+                    if tag=='':
+                        tag = fmt[j][1][i]
+                    elif fmt[j][1][i]!=tag:
+                        return None
+            if tag!='':
+                for j in range(len(fmt)):
+                    fmt[j][1][i] = tag
+        def mapping(s, t):
+            r = ''
+            n = len(s)
+            i = 0
+            j = 0
+            while i < n:
+                if s[i]=='#':
+                    if i+1<n:
+                        if s[i+1]=='d' or s[i+1]=='s':
+                            r+=t[j]
+                            j+=1
+                        else:
+                            r+=s[i+1]
+                        i+=1
+                    else:
+                        r+='#'
+                else:
+                    r+=s[i]
+                i+=1
+            return r
+        pre = ''
+        for i in range(len(fmt)):
+            fmt[i] = mapping(*fmt[i])
+            if pre!='' and fmt[i]!=pre:
+                return None
+            pre = fmt[i]
+        return pre
