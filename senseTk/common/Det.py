@@ -61,6 +61,10 @@ class Det(object):
     @property
     def x2(self):
         return self._x1 + self._w
+
+    @x2.setter
+    def x2(self, x2):
+        self._w = x2 - self._x1
     
     @property
     def y1(self):
@@ -73,14 +77,26 @@ class Det(object):
     @property
     def y2(self):
         return self._y1 + self._h
+
+    @y2.setter
+    def y2(self, y2):
+        self._h = y2 - self._y1
     
     @property
     def cx(self):
         return self._x1 + self._w/2
+
+    @cx.setter
+    def cx(self, cx):
+        self._x1 = cx - self._w/2
     
     @property
     def cy(self):
         return self._y1 + self._h/2
+
+    @cy.setter
+    def cy(self, cy):
+        self._y1 = cy - self._h/2
     
         
     # def __setattr__(self, x, y): 
