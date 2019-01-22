@@ -392,6 +392,10 @@ class IMGallery(QWidget):
         if e.key() == QtCore.Qt.Key_Q and (e.modifiers() == QtCore.Qt.ControlModifier):
             exit()
 
+    def __del__(self):
+        self.cache = False
+        del self.cacheThread
+
 if __name__=='__main__':
     requireQA()
     IMGallery([np.zeros((1080,1920,3), dtype='uint8')]*10).show()
