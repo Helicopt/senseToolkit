@@ -87,14 +87,14 @@ def loadConfig(x):
 def make_dataset(data, destination, args = None):
 	if args is None:
 		args = default_gt_search_config
-	args = loadConfig(args)
 	if isinstance(data, str):
+		args = loadConfig(args)
 		sa = gtSearcher(data, args)
 		data = sa()
 	if isinstance(data, gtSearcher):
 		sa = data
+		args = loadConfig(sa.config)
 		data = sa()
-		args = sa.config
 	cnt = 0
 	try:
 		os.mkdir(destination)
