@@ -94,6 +94,7 @@ def make_dataset(data, destination, args = None):
 	if isinstance(data, gtSearcher):
 		sa = data
 		data = sa()
+		args = data.config
 	cnt = 0
 	try:
 		os.mkdir(destination)
