@@ -192,15 +192,17 @@ class Det(object):
         return ret._astype(dtype)
 
     def __mul__(self, a):
+        tmp = copy.copy(self)
         if isinstance(a, float) or isinstance(a, int):
             nw = self.w*a
             nh = self.h*a
             cx = self.cx
             cy = self.cy
-            self.x1 = cx - nw/2
-            self.y1 = cy - nh/2
-            self.w = nw
-            self.h = nh
+            tmp.x1 = cx - nw/2
+            tmp.y1 = cy - nh/2
+            tmp.w = nw
+            tmp.h = nh
+        return tmp
 
     def __str__(self):
         return '%d,%d,%.2f,%.2f,%.2f,%.2f,%.3f,%s,%d,-1'%\
