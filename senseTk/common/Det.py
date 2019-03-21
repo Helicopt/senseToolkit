@@ -192,7 +192,7 @@ class Det(object):
         return ret._astype(dtype)
 
     def __mul__(self, a):
-        if isinstance(y, float) or isinstance(y, int):
+        if isinstance(a, float) or isinstance(a, int):
             nw = self.w*a
             nh = self.h*a
             cx = self.cx
