@@ -11,5 +11,5 @@ from . import common
 from . import tracking
 from . import magic
 
-__version__ = '0.4.8'
+__version__ = '0.4.9'
 

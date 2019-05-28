@@ -10,6 +10,8 @@
 import cv2
 import re
 import os
+import time
+from ..extension import flow
 
 def streamForward(source, destination):
 	while True:
@@ -144,3 +146,45 @@ def autoPattern(path):
                 return None
             pre = fmt[i]
         return pre
+
+def LAP_Matching(Lis, Ris, CostFunc, Lapsolver = 'flow'):
+    '''
+    Lis, Ris: two list of items, representing Left side
+              and the Right side nodes of the Bipartie-Graph
+    CostFunc: cost function to create a weighted edge (of 2 nodes),
+              return a float in range (0,1] representing the
+              weight and return None or 0 representing no such edge
+    Lapsolver: Currently support flow module only
+    '''
+    n = len(Lis)
+    m = len(Ris)
+    uid = int(time.time() * 10000 % int(1e9+7))
+    maxn = int(2e6)
+    thr = maxn - 1
+    alpha = 1e6
+    flow.createFlow(uid)
+    flow.clear(uid)
+    flow.setThr(uid, thr)
+    flow.setNodes(uid, n, m)
+    for i, li in enumerate(Lis):
+        for j, ri in enumerate(Ris):
+            cost = CostFunc(li, ri)
+            if cost is not None and cost>0:
+                c = float(cost) * alpha
+                c = maxn - int(c)
+                if c >= thr: continue
+                flow.addEdge(uid, i+1, n+j+1, c)
+    match = flow.flow(uid)
+    matched = []
+    lmiss = []
+    rmiss = set([i for i in range(m)])
+    for i in range(n):
+        ind = match[i + 1] - n - 1
+        if ind>=0:
+            matched.append((i, ind))
+            rmiss.remove(ind)
+        else:
+            lmiss.append(i)
+    flow.release(uid)
+    return matched, lmiss, list(rmiss)
+

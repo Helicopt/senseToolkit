@@ -11,7 +11,7 @@ from setuptools import setup, find_packages, Extension
 from distutils.version import LooseVersion, StrictVersion
 # from distutils.core import setup, Extension
 
-__version__ = '0.4.8'
+__version__ = '0.4.9'
 
 __required__ = [
             'numpy>=1.12.1',
@@ -43,7 +43,10 @@ setup(
     license = 'MIT',
     install_requires = required,
     packages = find_packages(),
-    ext_modules=[Extension('senseTk.extension.functional', sources=['./senseTk/extension/functional/functional.cpp'])]
+    ext_modules=[
+        Extension('senseTk.extension.functional', sources=['./senseTk/extension/functional/functional.cpp']),
+        Extension('senseTk.extension.flow', sources=['./senseTk/extension/flow/flow.cpp']),
+    ]
 )
 
 if __name__=='__main__':
