@@ -11,19 +11,20 @@ from setuptools import setup, find_packages, Extension
 from distutils.version import LooseVersion, StrictVersion
 # from distutils.core import setup, Extension
 
-__version__ = '0.4.9'
+__version__ = '0.4.10'
 
 __required__ = [
-            'numpy>=1.12.1',
-            'qimage2ndarray>=1.6',
-            'six'
-        ]
+    'numpy>=1.12.1',
+    'qimage2ndarray>=1.6',
+    'six',
+    'BeautifulTable',
+]
 required = __required__
 try:
     import cv2
-    print('Searching for cv2==%s'%cv2.__version__)
-    assert LooseVersion(cv2.__version__)>=LooseVersion('2.4.10')
-    print('Best match: cv2 %s'%cv2.__version__)
+    print('Searching for cv2==%s' % cv2.__version__)
+    assert LooseVersion(cv2.__version__) >= LooseVersion('2.4.10')
+    print('Best match: cv2 %s' % cv2.__version__)
 except(ImportError, AssertionError):
     required.append('opencv-python>=2.4.10')
 
@@ -34,21 +35,23 @@ except(ImportError, AssertionError):
     print('Cannot find optional module PyQt5 or python-qt5, you need to install it before you use IMGallery module')
 
 setup(
-    name = 'senseToolkit',
-    version = __version__,
-    description = 'Python functions for CV process',
-    author = 'Toka',
-    author_email = 'fengweitao@sensetime.com',
-    url = 'https://github.com/Helicopt/senseToolkit',
-    license = 'MIT',
-    install_requires = required,
-    packages = find_packages(),
+    name='senseToolkit',
+    version=__version__,
+    description='Python functions for CV process',
+    author='Toka',
+    author_email='fengweitao@sensetime.com',
+    url='https://github.com/Helicopt/senseToolkit',
+    license='MIT',
+    install_requires=required,
+    packages=find_packages(),
     ext_modules=[
-        Extension('senseTk.extension.functional', sources=['./senseTk/extension/functional/functional.cpp']),
-        Extension('senseTk.extension.flow', sources=['./senseTk/extension/flow/flow.cpp']),
+        Extension('senseTk.extension.functional', sources=[
+                  './senseTk/extension/functional/functional.cpp']),
+        Extension('senseTk.extension.flow', sources=[
+                  './senseTk/extension/flow/flow.cpp']),
     ]
 )
 
-if __name__=='__main__':
+if __name__ == '__main__':
     # __author__ == '__toka__'
     pass

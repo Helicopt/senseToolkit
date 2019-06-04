@@ -12,6 +12,7 @@ Neccessary:
 - opencv>=2.4.10
 - numpy>=1.12.1
 - six
+- BeautifulTable
 
 IMGallery optional:
 - qimage2ndarray>=1.6
@@ -30,6 +31,8 @@ alias py=/your_local_python/bin/python
 py setup.py build install
 ```
 
+Also you can build in your local directories while not in the system path.
+
 ## Notes
 If cannot find the package, try to add the egg file to your pythonpath
 
@@ -39,15 +42,48 @@ i.e., export PYTHONPATH=$PYTHONPATH:/installed\_place/senseToolkit-[version]-[ar
 
 ## Apps
 ```sh
-python -m senseTk.apps.visualize
 usage: python -m senseTk.apps.visualize [-h] [--ifmt IFMT] [--istart ISTART]
-                    [--trackset TRACKSET] [--format {MOT,MOTwithScore}]
-                    src
+                                        [--trackset TRACKSET]
+                                        [--format {MOT,MOTwithScore,Label,Detect}]
+                                        [--filter FILTER]
+                                        src
 
-python -m senseTk.apps.VI
-usage: python -m senseTk.apps.VI [-h] [-t {auto,img,video}] [-i] [--ifmt IFMT] 
-			  [--istart ISTART] [--ofmt OFMT] [--ostart OSTART]
-              source destination
+Tool for Visualization.
+
+positional arguments:
+  src                   source video/imgset
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --ifmt IFMT           decide input imgset format
+  --istart ISTART       input imgset start offset
+  --trackset TRACKSET   file recording tracklets
+  --format {MOT,MOTwithScore,Label,Detect}, -f {MOT,MOTwithScore,Label,Detect}
+                        trackset format
+  --filter FILTER, -F FILTER
+                        filtering confidence (only show larger than threshold)
+
+usage: python -m senseTk.apps.VI [-h] [-t {auto,img,video}] [-i] [--ifmt IFMT]
+                                 [--istart ISTART] [--ofmt OFMT]
+                                 [--ostart OSTART]
+                                 source destination
+
+Tool for Video-Imageset exchange.
+
+positional arguments:
+  source                source video/imgset
+  destination           target video/imgset
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t {auto,img,video}, --type {auto,img,video}
+                        target type, auto is to change to different from
+                        source
+  -i, --inverse         switch src and dest
+  --ifmt IFMT           decide input imgset format
+  --istart ISTART       input imgset start offset
+  --ofmt OFMT           decide output imgset format
+  --ostart OSTART       output imgset start offset
 ```
 
 ## Docs
@@ -186,7 +222,7 @@ def __init__(self, fn = None, dealer = None, filter = None, formatter = None):
 
 ```
 
-### Class VideoClipReader & VideoClipWriter: a convenient video wrapper merging nomal video and images set
+### Class VideoClipReader & VideoClipWriter: a convenient video wrapper merging nomal video and images set.
 
 VideoClipReader:
 
@@ -215,3 +251,51 @@ vidwriter.write(img)
 vidwriter.release()
 ```
 
+### Module Magic.
+
+More powerful tools like **FileAgent**, **GridSearch**, **gtSearch**, **ImageGallery**, **pyAutoLoader** and **TableCapture** can be found here.
+This module will be updated continuely.
+
+#### Class FileAgent
+
+- You can use this Class to access local files, http files and ftp files. All of them have the same usage.
+```python
+from senseTk.magic.FileAgent import getFile
+f = getFile('https://www.baidu.com/img/bd_logo1.png?where=super') #LOCAL PATH, HTTP URL, FTP ADDRESS
+cv2.imshow(f.img())
+cv2.waitKey(0)
+```
+
+#### Class IMGallery
+
+- You can view a set of images using this GUI tool, but firstly you need to install PyQt5.
+```python
+from senseTk.magic import *
+requireQA()
+IMGallery(['%d.jpg'%i for i in range(100)]).show()
+vid = VideoClipReader('myvideo.avi')
+IMGallery(vid).show() # all you need is to put in a class having the __getitem__ method and returing a image(numpy)
+```
+
+
+#### Class TableCapture
+
+- You can recover a BeautifulTable class from a diction (json or yaml), or from plain text.
+```python
+from senseTk.magic import *
+t = TableCapture.fromText(\
+'\
++--------+-----+\n\
+| Gender | Age |\n\
++--------+-----+\n\
+| female |  19 |\n\
++--------+-----+\n\
+|  male  |  21 |\n\
++--------+-----+\n'\
+)
+print(t)
+```
+
+### Module Tracking.
+
+- Some tracking functions, I will introduce them next time.

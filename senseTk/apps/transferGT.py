@@ -10,9 +10,9 @@ import senseTk
 from senseTk.common import *
 import argparse
 
-if __name__=='__main__':
+if __name__ == '__main__':
     # __author__ == '__toka__'
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser('python -m senseTk.apps.transferGT')
     parser.add_argument('src', type=str, help='source file')
     parser.add_argument('src_format', type=str, help='source format')
     parser.add_argument('dst', type=str, help='destination file')
