@@ -259,6 +259,7 @@ This module will be updated continuely.
 #### Class FileAgent
 
 - You can use this Class to access local files, http files and ftp files. All of them have the same usage.
+
 ```python
 from senseTk.magic.FileAgent import getFile
 f = getFile('https://www.baidu.com/img/bd_logo1.png?where=super') #LOCAL PATH, HTTP URL, FTP ADDRESS
@@ -269,6 +270,7 @@ cv2.waitKey(0)
 #### Class IMGallery
 
 - You can view a set of images using this GUI tool, but firstly you need to install PyQt5.
+
 ```python
 from senseTk.magic import *
 requireQA()
@@ -281,6 +283,7 @@ IMGallery(vid).show() # all you need is to put in a class having the __getitem__
 #### Class TableCapture
 
 - You can recover a BeautifulTable class from a diction (json or yaml), or from plain text.
+
 ```python
 from senseTk.magic import *
 t = TableCapture.fromText(\
