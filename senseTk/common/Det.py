@@ -216,46 +216,37 @@ class Det(object):
         return (self.x1, self.y1, self.w, self.h)
 
 
-class VidDet(object): #general Det of Video
+class TrackSet(object): #general Det of Video
 
     min_fr = 1000000000
     max_fr = -1
 
     @staticmethod
     def readline(row):
-        bk = row
-        row = row.strip().split(',')
-        if len(row)>10 or len(row)<9:
-            return VidDet.readline2(bk)
-        fr = int(row[0])
-        uid = int(row[1])
-        x1 = float(row[2])
-        y1 = float(row[3])
-        w = float(row[4])
-        h = float(row[5])
-        enable = int(row[6])
-        cl = int(row[7])
-        conf = float(row[8])
-        res = Det(x1,y1,w,h,
-            cls = cl, confidence = conf,
-            fr = fr, uid = uid, status = enable)
-        return res
+        arr = re.split('[,\\s]+', row.strip())
+        if len(arr)==8:
+            return TrackSet.readline_label(row)
+        if len(arr)==9:
+            return TrackSet.readline_groundtruth(row)
+        if len(arr)==10:
+            return TrackSet.readline_result(row)
+        raise Exception('Unknown Format')
 
     @staticmethod
-    def readline2(row):
-        bk = row
-        row = row.strip().split(' ')
-        fr = int(row[0])
-        uid = int(row[1])
-        x1 = int(row[2])
-        y1 = int(row[3])
-        w = int(row[4])
-        h = int(row[5])
-        cl = int(row[7])
-        conf = float(row[6])
-        res = Det(x1,y1,w,h,cls = cl,confidence = conf,
-            fr = fr, uid = uid)
-        return res
+    def readline_label(row):
+        return TrackSet.formatline(row, 'fr.i id.i x1 y1 w h cf la.s')
+
+    @staticmethod
+    def readline_detect(row):
+        return TrackSet.formatline(row, 'fr.i id.i x1 y1 w h cf la.s -1 -1')
+
+    @staticmethod
+    def readline_result(row):
+        return TrackSet.formatline(row, 'fr.i id.i x1 y1 w h cf st.i la.s -1')
+
+    @staticmethod
+    def readline_groundtruth(row):
+        return TrackSet.formatline(row, 'fr.i id.i x1 y1 w h st.i la.i cf')
 
     @staticmethod
     def formatline(row, formatter):

@@ -122,6 +122,7 @@ class IMGallery(QWidget):
     E_HOVER = 2
     E_MPRESS = 3
     E_MRELEASE = 4
+    E_INFOCLICK = 5
 
     def __init__(self, data, ind = 0, top_left = (0, 0), size = (1600, 900), cache = True):
         super(IMGallery, self).__init__()
@@ -170,7 +171,7 @@ class IMGallery(QWidget):
         disButton = QPushButton('/')
         freshButton = QPushButton('Refresh')
         collapseButton = QPushButton('Collapse')
-        infoPan = QTextEdit()
+        infoPan = QListWidget()
         posBar = QLabel()
         self.prevButton = prevButton
         self.nextButton = nextButton
@@ -194,7 +195,6 @@ class IMGallery(QWidget):
 
         infoPan.setMinimumHeight(self.size[1]/2)
         infoPan.setMinimumWidth(self.size[0]/5)
-        infoPan.setReadOnly(True)
 
         vbox = QVBoxLayout()
         subvb = QVBoxLayout()
@@ -229,6 +229,8 @@ class IMGallery(QWidget):
         self.disButton.clicked.connect(self.S_fromhead)
         self.freshButton.clicked.connect(self.S_refresh)
         self.collapseButton.clicked.connect(self.S_collapse)
+        self.infoPanel.clicked.connect(self.S_infoClick)
+        self.infoPanel.keyPressEvent = self.keyPressEvent
 
         # print(dir(self.imgLabel))
         def gen_me(tp):
@@ -241,9 +243,10 @@ class IMGallery(QWidget):
                 yy = int(py*self.last_scale)
                 self.renewPosBar(px, py, xx, yy, tp)
                 if callable(self.callback):
-                    self.callback(None, self.ind, type=tp, info = infoPan,
+                    ret = self.callback(None, self.ind, type=tp, info = infoPan,
                         x = px, y = py,
                         origin_x = xx, origin_y = yy)
+                    if ret: self.refresh()
             return mme
         self.imgLabel.setMouseTracking(True)
         self.imgLabel.mouseMoveEvent = gen_me(IMGallery.E_HOVER)
@@ -327,6 +330,13 @@ class IMGallery(QWidget):
 
     def S_refresh(self):
         self.refresh(update=True)
+
+    def S_infoClick(self, e):
+        sel = e.row()
+        if sel>=0 and sel < self.infoPanel.count():
+            if callable(self.callback):
+                ret = self.callback(None, self.ind, type=IMGallery.E_INFOCLICK, sel=sel)
+                if ret: self.refresh()
 
     def S_prev(self, *args, **kwargs):
         if 'd' not in kwargs:

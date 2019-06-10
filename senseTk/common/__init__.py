@@ -8,7 +8,7 @@
 #########################################################################
 
 from .Det import Det as Det
-from .Det import VidDet as TrackSet
+from .Det import TrackSet as TrackSet
 from .VideoClip import ImgVideoCapture as ImgVideoCapture
 from .VideoClip import VideoCapture as VideoCapture
 from .VideoClip import ImgVideoWriter as ImgVideoWriter
