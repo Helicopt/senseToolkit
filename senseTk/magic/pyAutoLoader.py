@@ -4,10 +4,11 @@ import sys
 def initLoader(cur, module_dict, class_name = '__auto__'):
     curs = []
     if isinstance(cur, str):
-        if os.path.isfile(cur) and os.path.basename(cur)!='__init__.py':
+        b, ext = os.path.splitext(os.path.basename(cur))
+        if os.path.isfile(cur) and b!='__init__':
             curs = [cur]
-        elif os.path.isdir(cur) or os.path.basename(cur)=='__init__.py':
-            if os.path.basename(cur)=='__init__.py':
+        elif os.path.isdir(cur) or os.path.isfile(cur) and b=='__init__':
+            if os.path.isfile(cur) and b=='__init__':
                 cur = os.path.dirname(cur)
             combine = lambda x: os.path.join(cur, x)
             curs = map(combine, os.listdir(cur))
