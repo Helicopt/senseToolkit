@@ -1,64 +1,36 @@
 import os
 import sys
 
-def initLoader(cur, global_dict, class_name = '__auto__', disable_module = True):
-    root = os.path.dirname(os.path.abspath(cur))
-    pkg_path = root
-    sysPaths = [os.path.abspath(i) for i in sys.path]
-    found = False
-    while len(pkg_path):
-        for i in sysPaths:
-            if pkg_path==i:
-                cur = os.path.relpath(cur, pkg_path)
-                found = True
-                break
-        if found: break
-        parent = os.path.dirname(pkg_path)
-        if parent==pkg_path: break
-        pkg_path = parent
-    if not found:
-        pkg_path = root
-        while len(pkg_path):
-            f = os.path.join(pkg_path, '__init__.py')
-            if not os.path.exists(f):
-                cur = os.path.relpath(cur, pkg_path)
-                found = True
-            if found: break
-            parent = os.path.dirname(pkg_path)
-            if parent==pkg_path: break
-            pkg_path = parent
-
-    # if cur[0]=='/':
-    #     cur = cur[len(os.getcwd())+1:]
-    if cur[-11:]=='__init__.py' or cur[-12:] in ['__init__.pyc', '__init__.pyo', '__init__.pyw']:
-        path = os.path.dirname(cur).replace('/', '.')
+def initLoader(cur, module_dict, class_name = '__auto__'):
+    curs = []
+    if isinstance(cur, str):
+        if os.path.isdir(cur):
+            combine = lambda x: os.path.join(cur, x)
+            curs = map(combine, os.listdir(cur))
+        else:
+            curs = [cur]
     else:
-        # if cur[-3:]=='.py':
-        #     path = cur[:-3].replace('/', '.')
-        # elif cur[-4:] in ['.pyc', '.pyo', '.pyw']:
-        #     path = cur[:-4].replace('/', '.')
-        raise Exception('Please launch initLoader in __init__.py file.')
-    for f in os.listdir(root):
-        mname = ''
-        if os.path.isfile(os.path.join(root,f)) and f[-3:]=='.py' and f!='__init__.py':
-            mname = f[:-3]
-        elif os.path.isdir(os.path.join(root,f)) and \
-        os.path.exists(os.path.join(root, f, '__init__.py')):
-            mname = f
-        if mname!='':
-            try:
-                if path!='':
-                    __import__('%s.%s'%(path, mname))
-                else:
-                    __import__('%s'%(mname))
-            except ValueError:
-                raise Exception('module not exists: [%s.%s], package %s'%(path, mname, cur))
-            if class_name == '__auto__':
-                cn = mname
+        curs = cur
+    curs = list(map(os.path.abspath, curs))
+    dirs = set()
+    for c in curs:
+        d = os.path.abspath(os.path.dirname(c))
+        dirs.add(d)
+
+    olds = sys.path
+    sys.path = list(dirs) + olds
+
+    for c in curs:
+        b, ext = os.path.splitext(os.path.basename(c))
+        if ext in ['.py', '.pyo', '.pyw', '.pyc'] and len(b)>0 and b[0]!='_':
+            if class_name is None:
+                m = __import__(b)
+            elif class_name=='__auto__':
+                m = getattr(__import__(b), b)
             else:
-                cn = class_name
-            if cn is not None and cn in global_dict[mname].__dict__:
-                global_dict[mname] = global_dict[mname].__dict__[cn]
-            elif disable_module:
-                del global_dict[mname]
-    del global_dict['initLoader']
+                m = getattr(__import__(b), class_name)
+            module_dict[b] = m
+
+    sys.path = olds
+
+    return module_dict
