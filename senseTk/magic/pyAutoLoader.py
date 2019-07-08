@@ -22,7 +22,7 @@ def initLoader(cur, module_dict, class_name = '__auto__'):
     cache = {}
     for c in curs:
         b, ext = os.path.splitext(os.path.basename(c))
-        if ext in ['.py', '.pyo', '.pyw', '.pyc', ''] and len(b)>0 and b[0]!='_':
+        if (ext in ['.py', '.pyo', '.pyw', '.pyc'] or ext=='' and os.path.isdir(c)) and len(b)>0 and b[0]!='_':
             d = os.path.abspath(os.path.dirname(c))
             r = cache.get(d, False)
             if r==False:
