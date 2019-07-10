@@ -14,6 +14,7 @@ from math import *
 from time import sleep, time
 import collections
 import random
+import operator
 import tempfile
 import re
 import logging
@@ -100,7 +101,7 @@ class gridSearcher(object):
 		self.run_func = run_
 		self.rec_func = rec_
 		self.eva_func = eva_
-		self.cmp = cmp
+		self.cmp = operator.lt
 		self.state = state
 		self.bb = None
 		self.llock = threading.Lock()
@@ -206,7 +207,7 @@ class gridSearcher(object):
 			if self.bb[i]:
 				self.done+=1
 				tmp = self.rec_func(self, self.rec_json[str(i)]['rec'])
-				if best is None or self.cmp(tmp, best)<0:
+				if best is None or self.cmp(tmp, best):
 					best = tmp
 					bid = i
 			elif ptr<0: ptr = i
@@ -230,20 +231,33 @@ class gridSearcher(object):
 				cc = st[i][0]
 				mx = None
 				mi = -1
+				job_cnt = 0
+				job_pool = []
 				for j in range(0,cc):
 					p[i] = j
 					_ = gen_code(st, p)
 					if not self.bb[_]:
+						while self.max_job>0 and job_cnt>=self.max_job:
+							sleep(1)
+							for ii, t in enumerate(job_pool):
+								if not t.is_alive():
+									del job_pool[ii]
+									job_cnt -= 1
+
 						real_p = [st[k][1][p[k]] for k in range(len_p)]
 						merge_p = OrderedDict({nm[k]:real_p[k] for k in range(len_p)})
 						
 						t = worker(task = (self.run_func, self.eva_func), argv = (self, merge_p, _))
 						t.setDaemon(True)
 						t.start()
-				main_t = threading.currentThread()
-				for t in threading.enumerate():
-					if t is main_t:
-						continue
+						job_cnt += 1
+						job_pool.append(t)
+				# main_t = threading.currentThread()
+				# for t in threading.enumerate():
+				# 	if t is main_t:
+				# 		continue
+				# 	t.join()
+				for t in job_pool:
 					t.join()
 				bak = recfile+'.bak'
 				fd = open(bak, 'w')
@@ -258,11 +272,11 @@ class gridSearcher(object):
 						self.logger.error('Fatal Error: thread broken.')
 						exit(233)
 					tmp = self.rec_func(self, self.rec_json[str(_)]['rec'])
-					if mx is None or self.cmp(tmp, mx)<0:
+					if mx is None or self.cmp(tmp, mx):
 						mx = tmp
 						mi = j
 				p[i] = mi
-				if best is None or self.cmp(mx,  best)<0:
+				if best is None or self.cmp(mx,  best):
 					best = mx
 					bid = gen_code(st, p)
 					self.logger.info('update best: %.3f, task_id %d'%(best, bid))
