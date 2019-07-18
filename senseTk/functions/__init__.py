@@ -65,7 +65,7 @@ def cvShow(im, label = 'test'):
 	cv2.imshow(label, im)
 	cvWait()
 
-def autoPattern(path):
+def autoPattern(path, loose_fmt = True):
     def guess(s):
         d = ''
         r = ''
@@ -96,18 +96,32 @@ def autoPattern(path):
         if os.path.isfile(path):
             return path
         elif os.path.isdir(path):
-            fns = filter(lambda x: not re.match('^\.', x), os.listdir(path))
+            fns = list(filter(lambda x: not re.match('^\.', x), os.listdir(path)))
     else:
         fns = [i for i in path]
     if True:
+        rec = {}
         fmt = []
         pre = ''
         for i in fns:
             r, e = guess(i)
+            rec[r] = rec.get(r, 0) + 1
             fmt.append([r, e])
-            if pre!='' and len(e)!=len(pre):
+            if loose_fmt == False and pre!='' and len(e)!=len(pre):
                 return None
             pre = e
+        if loose_fmt:
+            n = len(fns)
+            k = None
+            for i in rec:
+                if rec[i]>(n>>1):
+                    k = i
+                    break
+            if k is None:
+                return None
+            else:
+                fmt = list(filter(lambda x: x[0]==k, fmt))
+                pre = fmt[0][1]
         for i in range(len(pre)):
             tag = ''
             for j in range(len(fmt)):
