@@ -224,6 +224,8 @@ class TrackSet(object): #general Det of Video
     @staticmethod
     def readline(row):
         arr = re.split('[,\\s]+', row.strip())
+        if len(arr)==7:
+            return TrackSet.readline_MOTdet(row)
         if len(arr)==8:
             return TrackSet.readline_label(row)
         if len(arr)==9:
@@ -239,6 +241,10 @@ class TrackSet(object): #general Det of Video
     @staticmethod
     def readline_detect(row):
         return TrackSet.formatline(row, 'fr.i id.i x1 y1 w h cf la.s -1 -1')
+
+    @staticmethod
+    def readline_MOTdet(row):
+        return TrackSet.formatline(row, 'fr.i id.i x1 y1 w h cf')
 
     @staticmethod
     def readline_result(row):
