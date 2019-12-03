@@ -181,6 +181,9 @@ class Det(object):
         self.x1, self.y1, self.w, self.h = map(dtype, self.toList())
         return self
 
+    def copy(self):
+        return copy.copy(self)
+
     def astype(self, dtype):
         ret = copy.copy(self)
         return ret._astype(dtype)
