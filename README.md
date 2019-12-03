@@ -21,14 +21,14 @@ IMGallery optional:
 ## Local build(with sudo)
 ```sh
 cd senseToolkit
-sudo python setup.py build install
+sudo python setup.py build_ext --inplace install
 ```
 
 ## Server build(without sudo)
 ```sh
 cd senseToolkit
 alias py=/your_local_python/bin/python
-py setup.py build install
+py setup.py build_ext --inplace install
 ```
 
 Also you can build in your local directories while not in the system path.

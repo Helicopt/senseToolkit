@@ -12,12 +12,6 @@ import senseTk.extension.functional as F
 
 class Det(object):
 
-    x1 = 0 
-    y1 = 0 
-    w = 5 
-    h = 5 
-    # __free__ = False
-
     OBJECT_PED = 1
     OBJECT_OTHER = 2
     OBJECT_VEHICLE = 3
@@ -342,7 +336,7 @@ class TrackSet(object): #general Det of Video
                     tmp['%02d'%it.uid] = [it.x1, it.y1, it.x2, it.y2]
             
         else:
-            for one in self.allPed():
+            for one in self.allId():
                 tmp = {}
                 js['%02d'%one] = tmp
                 one = self(one)
@@ -355,9 +349,10 @@ class TrackSet(object): #general Det of Video
 
 
     def __init__(self, fn = None, dealer = None, filter = None, formatter = None):
-        self.frd = {}
-        self.ped = {}
-        self.cache = {}
+        self.__frd = {}
+        self.__idd = {}
+        self.__cache_id = {}
+        self.__cache_fr = {}
         if fn is not None:
             f = open(fn)
             rows = f.readlines()
@@ -381,126 +376,143 @@ class TrackSet(object): #general Det of Video
 
     def __getitem__(self, index):
         if isinstance(index, int):
-            if index in self.frd:
-                return self.frd[index]
+            if index in self.__cache_fr:
+                return self.__cache_fr[index]
+            if index in self.__frd:
+                ret = list(self.__frd[index].values())
+                self.__cache_fr[index] = ret
+                return ret
             else:
                 return []
         if isinstance(index, slice):
             res = self.__class__()
-            for i in xrange(*(index.indices(self.max_fr+1))):
-                if i in self.frd:
-                    for one in self.frd[i]:
-                        res.append_data(copy.copy(one))
+            for i in range(*(index.indices(self.max_fr+1))):
+                if i in self.__frd:
+                    for one in self.__frd[i].values():
+                        res.append_data(one.copy())
             return res
         raise Exception('index must be integer or slice. NOT  %s'%str(index))
 
     def __setitem__(self, index, val):
         if isinstance(index, int):
+            for one in list(self.__frd.get(index, {}).values()):
+                self.delete(one)
             if val is None:
-                self.frd[index] = []
-                return
-            if isinstance(val, list):
-                self.frd[index] = val
-            else:
-                self.frd[index] = [val]
+                pass
+            elif isinstance(val, list):
+                for one in val:
+                    if one.fr==index:
+                        self.append_data(one)
+            elif val.fr==index:
+                self.append_data(val)
             self.max_fr = max(self.max_fr, index)
             self.min_fr = min(self.min_fr, index)
         elif isinstance(index, slice):
+            for i in range(*(index.indices(self.max_fr+1))):
+                for one in list(self.__frd.get(i, {}).values()):
+                    self.delete(one)
             if val is None:
-                for i in xrange(*(index.indices(self.max_fr+1))):
-                    self.frd[i] = []
-                return
-            if isinstance(val, list):
-                cnt = 0
-                for i in xrange(*(index.indices(self.max_fr+1))):
-                    cnt+=1
-                if len(val)==cnt:
-                    cnt = 0
-                    for i in xrange(*(index.indices(self.max_fr+1))):
-                        self.frd[i] = val[cnt]
-                        cnt += 1
-                        self.max_fr = max(self.max_fr, i)
-                        self.min_fr = min(self.min_fr, i)
-                elif index.stop is None:
-                    self.__setitem__(index, None)
-                    i = index.start
-                    j = 0
-                    n = len(val)
-                    while j<n:
-                        self.frd[i] = val[j]
-                        j+=1
-                        if index.step is None:
-                            i+=1
-                        else:
-                            i+=index.step
-                        self.max_fr = max(self.max_fr, i)
-                        self.min_fr = min(self.min_fr, i)
-                else:
-                    raise Exception('cannot place %d elements in %d length'%(len(val), cnt))
+                pass
             elif isinstance(val, self.__class__):
-                if index.stop is None:
-                    self.__setitem__(index, None)
-                    mxf = max(self.max_fr, val.max_fr)
-                    for i in xrange(*(index.indices(mxf+1))):
-                        self.frd[i] = val[i]
-                        self.max_fr = max(self.max_fr, i)
-                        self.min_fr = min(self.min_fr, i)
-                else:
-                    for i in xrange(*(index.indices(self.max_fr+1))):
-                        self.frd[i] = val[i]
+                mxf = max(self.max_fr, val.max_fr)
+                for i in range(*(index.indices(mxf+1))):
+                    for one in val[i]:
+                        self.append_data(one)
+                    self.max_fr = max(self.max_fr, i)
+                    self.min_fr = min(self.min_fr, i)
+            else:
+                raise ValueError('Only TrackSet can be assigned to TrackSet segment.')
         else:
             raise Exception('index must be integer or slice. NOT  %s'%str(index))
 
     def frameRange(self):
         return range(self.min_fr, self.max_fr+1)
 
+
     def allPed(self):
-        return self.ped.keys()
+        return self.__idd.keys()
+
+    def allId(self):
+        return self.__idd.keys()
 
     def allFr(self):
-        return self.frd.keys()
+        return self.__frd.keys()
 
     def append_data(self, D):
-        if D.uid not in self.ped:
-            self.ped[D.uid] = []
-        self.ped[D.uid].append(D)
-        if D.fr not in self.frd:
-            self.frd[D.fr] = []
-        self.frd[D.fr].append(D)
+        if D.uid not in self.__idd:
+            self.__idd[D.uid] = {}
+        self.__idd[D.uid][D.fr] = D
+        if D.fr not in self.__frd:
+            self.__frd[D.fr] = {}
+        self.__frd[D.fr][D.uid] = D
         self.min_fr = min(self.min_fr, D.fr)
         self.max_fr = max(self.max_fr, D.fr)
-        if D.uid in self.cache:
-            self.cache[D.uid].append_data(D)
+        if D.uid in self.__cache_id:
+            self.__cache_id[D.uid].append_data(D)
+        if D.fr in self.__cache_fr:
+            self.__cache_fr[D.fr].append(D)
+
+    def count(self):
+        return sum([len(i) for i in self.__frd.values()])
+
+    def fr_count(self, frIndex=None):
+        if frIndex is None:
+            return len(self.__frd)
+        else:
+            return len(self.__frd.get(frIndex, {}))
+
+    def id_count(self, idIndex=None):
+        if idIndex is None:
+            return len(self.__idd)
+        else:
+            return len(self.__idd.get(idIndex, {}))
 
     def delete(self, d):
         if isinstance(d, list) or isinstance(d, tuple):
             uid, fr = d
         else:
             uid, fr = d.uid, d.fr
-        for i, j in enumerate(self.frd[fr]):
-            if j.uid==uid:
-                del self.frd[fr][i]
-                break
-        for i, j in enumerate(self.ped[uid]):
-            if j.fr==fr:
-                del self.ped[uid][i]
-                break
-        if uid in self.cache:
-            self.cache[uid].delete(d)
-        if len(self.frd[fr])==0:
-            del self.frd[fr]
-        if len(self.ped[uid])==0:
-            del self.ped[uid]
-            if uid in self.cache: del self.cache[uid]
+        if fr in self.__frd:
+            if uid in self.__frd[fr]:
+                del self.__frd[fr][uid]
+        if uid in self.__idd:
+            if fr in self.__idd[uid]:
+                del self.__idd[uid][fr]
+        if fr in self.__cache_fr:
+            del self.__cache_fr[fr]
+        if uid in self.__cache_id:
+            self.__cache_id[uid].delete(d)
+        if len(self.__frd[fr])==0:
+            del self.__frd[fr]
+            if fr in self.__cache_fr: del self.__cache_fr[fr]
+        if len(self.__idd[uid])==0:
+            del self.__idd[uid]
+            if uid in self.__cache_id: del self.__cache_id[uid]
 
     def __call__(self, ind):
-        if ind in self.cache:
-            return self.cache[ind]
-        if ind in self.ped:
+        if ind in self.__cache_id:
+            return self.__cache_id[ind]
+        if ind in self.__idd:
             ret = self.__class__()
-            for one in self.ped[ind]:
+            for one in self.__idd[ind].values():
                 ret.append_data(one)
-            self.cache[ind] = ret
+            self.__cache_id[ind] = ret
             return ret
         else:
             return None
+
+    def __add__(self, o):
+        assert isinstance(o, TrackSet), 'Unsupported operand type %s'%type(o)
+        ret = self[:]
+        for f in o.__frd:
+            for d in o.__frd[f].values():
+                ret.append_data(d)
+        return ret
+
+    def __iadd__(self, o):
+        assert isinstance(o, TrackSet), 'Unsupported operand type %s'%type(o)
+        for f in o.__frd:
+            for d in o.__frd[f].values():
+                self.append_data(d)
+        return self
+

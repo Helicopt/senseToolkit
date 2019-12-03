@@ -38,7 +38,7 @@ def make_lines(*args, **sps):
 	return res
 
 def parseFMT(x):
-	k = re.split('\s+', x.strip())
+	k = re.split(r'\s+', x.strip())
 	res = {}
 	for _, i in enumerate(k):
 		res[i] = _
