@@ -27,7 +27,8 @@ def test_dets():
     a.cx -= 150
     assert(a._trim(sz = (1920, 1080), toInt = False).x1==approx(0))
     assert(a._trim(sz = (1920, 1080), toInt = False).cx==approx((101.3+1+67.2-150)/2.))
-    assert(a._trim(sz = (1920, 1080), toInt = True).cx==approx(int((101.3+1+67.2-150)/2)))
+    assert(a._trim(sz = (1920, 1080), toInt = True).cx==approx(int((101.3+1+67.2-150)/2))\
+        or a._trim(sz = (1920, 1080), toInt = True).cx==approx((int(101.3+1+67.2-150)/2)))
 
 def test_trackset():
     with NamedTemporaryFile(delete=False, mode='w') as ntf:
