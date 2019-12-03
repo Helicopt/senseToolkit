@@ -53,7 +53,8 @@ def test_time1():
 
 def test_time2():
     if not NobF:
-
+        a = Det(101.3, 413.5, 67.2, 201.1)
+        b = Det(94.5, 510.1, 70.9, 203.7)
         c = 0.
         be = time.time()
         _a = bF.cDet(a.x1, a.y1, a.w, a.h)
@@ -82,4 +83,3 @@ def test_time2():
         # print(t1_2)
         # assert(t1_2 < 1)
 
-    
