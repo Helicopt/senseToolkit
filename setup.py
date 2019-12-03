@@ -6,10 +6,12 @@
 # mail: fengweitao@sensetime.com
 # Created Time: 2018年07月27日 星期五 11时58分11秒
 #########################################################################
-
+import sys
 from setuptools import setup, find_packages, Extension
 from distutils.version import LooseVersion, StrictVersion
 # from distutils.core import setup, Extension
+
+py_version = '27' if sys.version_info.major==2 else '35'
 
 __version__ = '0.5.0'
 
@@ -49,6 +51,9 @@ setup(
                   './senseTk/extension/functional/functional.cpp']),
         Extension('senseTk.extension.flow', sources=[
                   './senseTk/extension/flow/flow.cpp']),
+        Extension('senseTk.extension.boost_functional', sources=[
+                  './senseTk/extension/functional/boost_functional.cpp'],
+                  libraries=['boost_python-py%s'%py_version]),
     ]
 )
 

@@ -8,9 +8,9 @@
 #########################################################################
 import copy
 import re
-import senseTk.extension.functional as F
+import senseTk.extension.boost_functional as bF
 
-class Det(object):
+class Det(bF.cDet):
 
     OBJECT_PED = 1
     OBJECT_OTHER = 2
@@ -18,132 +18,13 @@ class Det(object):
 
     def __init__(self, x1, y1, w, h, cls = None, confidence = 1.,
      uid = -1, fr = -1, status = -1):
-        self._x1 = x1
-        self._y1 = y1
-        self._w = w 
-        self._h = h 
+        super(Det, self).__init__(x1, y1, w, h)
         self.label = cls 
         self.conf = confidence
         self.uid = uid
         self.fr = fr
         self.status = status
 
-    @property
-    def w(self):
-        return self._w
-
-    @w.setter
-    def w(self, w):
-        self._w = w
-    
-    @property
-    def h(self):
-        return self._h
-
-    @h.setter
-    def h(self, h):
-        self._h = h
-    
-    @property
-    def x1(self):
-        return self._x1
-
-    @x1.setter
-    def x1(self, x1):
-        self._x1 = x1
-    
-    @property
-    def x2(self):
-        return self._x1 + self._w
-
-    @x2.setter
-    def x2(self, x2):
-        self._w = x2 - self._x1
-    
-    @property
-    def y1(self):
-        return self._y1
-    
-    @y1.setter
-    def y1(self, y1):
-        self._y1 = y1
-    
-    @property
-    def y2(self):
-        return self._y1 + self._h
-
-    @y2.setter
-    def y2(self, y2):
-        self._h = y2 - self._y1
-    
-    @property
-    def cx(self):
-        return self._x1 + self._w/2
-
-    @cx.setter
-    def cx(self, cx):
-        self._x1 = cx - self._w/2
-    
-    @property
-    def cy(self):
-        return self._y1 + self._h/2
-
-    @cy.setter
-    def cy(self, cy):
-        self._y1 = cy - self._h/2
-    
-        
-    # def __setattr__(self, x, y): 
-    #     if not self.__free__ and (x=='x2' or x=='y2' or x=='cx' or x=='cy'):
-    #         raise Exception('cannot modify infered properties')
-    #     super(Det, self).__setattr__(x, y)
-    #     if x=='x1' or x=='y1' or x=='w' or x=='h':
-    #         self.__free__ = True
-    #         self.x2 = self.x1 + self.w
-    #         self.y2 = self.y1 + self.h
-    #         self.cx = (self.x1 + self.x2)/2
-    #         self.cy = (self.y1 + self.y2)/2
-    #         self.__free__ = False
-
-    '''
-    def area(self):
-        w = max(self.w, 0)
-        h = max(self.h, 0)
-        return w*h
-    '''
-    def area(self):
-        return F.c_area(self.w, self.h)
-        
-    
-    '''
-    def intersection(self, o):
-        mx1 = max(self.x1, o.x1)
-        my1 = max(self.y1, o.y1)
-        mx2 = min(self.x2, o.x2)
-        my2 = min(self.y2, o.y2)
-        ix = (mx2 - mx1) if (mx2 - mx1 > 0) else 0
-        iy = (my2 - my1) if (my2 - my1 > 0) else 0
-        return ix*iy
-    '''
-    def intersection(self, o):
-        return F.c_intersection(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
-
-
-    '''
-    def union(self, o):
-        return self.area() + o.area() - self.intersection(o)
-    '''
-    def union(self, o):
-        return F.c_union(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
-
-
-    '''
-    def iou(self, o):
-        intersect = self.intersection(o)
-        return intersect * 1. / (self.area() + o.area() - intersect);
-    '''
-    def iou(self, o):
-        return F.c_iou(self.x1, self.y1, self.w, self.h, o.x1, o.y1, o.w, o.h)
 
 
     def lt(self, ox = 0, oy = 0, trim = True):
@@ -161,32 +42,23 @@ class Det(object):
     def _trim(self, sz = None, toInt = True):
         if sz is not None:
             w, h = sz
-            x1, y1, x2, y2 = self.x1, self.y1, self.x2, self.y2
-            x1 = max(x1, 0)
-            y1 = max(y1, 0)
-            x2 = min(w, x2)
-            y2 = min(h, y2)
-            self.x1 = x1
-            self.y1 = y1
-            self.w = max(x2 - x1, 0)
-            self.h = max(y2 - y1, 0)
-        if toInt: self.x1, self.y1, self.w, self.h = map(int, self.toList())
+            super(Det, self)._trim(w, h)
+        if toInt: self._astype(int)
         return self
+
+    def copy(self):
+        return copy.copy(self)
 
     def trim(self, sz = None, toInt = True):
-        ret = copy.copy(self)
+        ret = self.copy()
         return ret._trim(sz, toInt = toInt)
 
-    def _astype(self, dtype):
-        self.x1, self.y1, self.w, self.h = map(dtype, self.toList())
-        return self
-
     def astype(self, dtype):
-        ret = copy.copy(self)
+        ret = self.copy()
         return ret._astype(dtype)
 
     def __mul__(self, a):
-        tmp = copy.copy(self)
+        tmp = self.copy()
         if isinstance(a, float) or isinstance(a, int):
             nw = self.w*a
             nh = self.h*a
