@@ -8,6 +8,8 @@
 #########################################################################
 import copy
 import re
+import os
+import xml.etree.ElementTree as ET
 import senseTk.extension.boost_functional as bF
 
 class Det(bF.cDet):
@@ -219,6 +221,78 @@ class TrackSet(object): #general Det of Video
                         tmp['%06d'%i] = [it.x1, it.y1, it.x2, it.y2]
         return js
 
+    def _load_txt(self, f, dealer, filter, formatter):
+        rows = f.readlines()
+        for row in rows:
+            if dealer is None:
+                if formatter is None:
+                    D = self.readline(row)
+                else:
+                    D = self.formatline(row, formatter)
+            else:
+                D = dealer(row)
+            if D is None or filter is not None and not filter(D): continue
+            # print type(D)
+            if isinstance(D, Det)==False:
+                # print D
+                fr, uid, x1, y1, w, h, label, conf = D
+                D = Det(x1,y1,w,h,cls = label, confidence = conf,
+                    fr = fr, uid = uid)
+            self.append_data(D)
+
+    def _load_xml(self, f, filter_):
+
+        def best_match(x):
+            val = int(x) if x.isdigit() else x
+            if isinstance(val, str):
+                try:
+                    float(val)
+                    val = float(val)
+                except ValueError as e:
+                    pass
+            return val
+
+        anno = ET.ElementTree(file=f).getroot()
+        common_kv = {}
+        objs = []
+        for obj in anno.iterfind('./'):
+            if obj.tag == 'object':
+                objs.append(obj)
+            if obj.tag == 'size':
+                common_kv[obj.tag] = dict(
+                    width=int(obj.find('width').text.strip()),
+                    height=int(obj.find('height').text.strip()),
+                )
+            else:
+                common_kv[obj.tag] = best_match(obj.text.strip())
+        if isinstance(common_kv.get('filename', ''), int):
+            common_kv['fr'] = common_kv.get('filename')
+        for obj in objs:
+            box = obj.find('bndbox')
+            x1 = float(box.find('xmin').text)
+            x2 = float(box.find('xmax').text)
+            y1 = float(box.find('ymin').text)
+            y2= float(box.find('ymax').text)
+            w = x2 - x1 + 1
+            h = y2 - y1 + 1
+            d = Det(x1, y1, w, h)
+            for k, v in common_kv.items():
+                setattr(d, k, v)
+            for one in obj.iterfind('./'):
+                if one.tag == 'name':
+                    d.label = one.text
+                elif one.tag == 'trackid' or one.tag == 'id':
+                    d.uid = int(one.text)
+                elif one.tag == 'confidence':
+                    d.conf = float(one.text)
+                elif one.tag == 'frame' or one.tag == 'frameindex':
+                    d.fr = int(one.text)
+                else:
+                    val = best_match(one.text.strip())
+                    setattr(d, one.tag, val)
+            if d is None or filter_ is not None and not filter_(d): continue
+            self.append_data(d)
+
 
     def __init__(self, fn = None, dealer = None, filter = None, formatter = None):
         self.__frd = {}
@@ -226,25 +300,16 @@ class TrackSet(object): #general Det of Video
         self.__cache_id = {}
         self.__cache_fr = {}
         if fn is not None:
-            f = open(fn)
-            rows = f.readlines()
-            for row in rows:
-                if dealer is None:
-                    if formatter is None:
-                        D = self.readline(row)
+            if os.path.isdir(fn):
+                fns = [os.path.join(fn, i) for i in os.listdir(fn)]
+            else:
+                fns = [fn]
+            for fn in fns:
+                with open(fn) as f:
+                    if os.path.splitext(fn)[-1] == '.xml':
+                        self._load_xml(f, filter)
                     else:
-                        D = self.formatline(row, formatter)
-                else:
-                    D = dealer(row)
-                if D is None or filter is not None and not filter(D): continue
-                # print type(D)
-                if isinstance(D, Det)==False:
-                    # print D
-                    fr, uid, x1, y1, w, h, label, conf = D
-                    D = Det(x1,y1,w,h,cls = label, confidence = conf,
-                        fr = fr, uid = uid)
-                self.append_data(D)
-            f.close()
+                        self._load_txt(f, dealer, filter, formatter)
 
     def __getitem__(self, index):
         if isinstance(index, int):
