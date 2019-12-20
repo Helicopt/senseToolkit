@@ -97,6 +97,8 @@ def autoPattern(path, loose_fmt = True):
             return path
         elif os.path.isdir(path):
             fns = list(filter(lambda x: not re.match('^\.', x), os.listdir(path)))
+        else:
+            fns = [path]
     else:
         fns = [i for i in path]
     if True:
