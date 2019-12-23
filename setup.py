@@ -19,6 +19,7 @@ __required__ = [
     'numpy>=1.12.1',
     'qimage2ndarray>=1.6',
     'six',
+    'lxml',
     'BeautifulTable',
 ]
 required = __required__
