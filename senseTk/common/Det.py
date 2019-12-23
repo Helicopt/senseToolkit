@@ -9,7 +9,7 @@
 import copy
 import re
 import os
-import xml.etree.ElementTree as ET
+from lxml.etree import ElementTree as ET
 import senseTk.extension.functional as F
 
 class Det(object):
@@ -383,7 +383,7 @@ class TrackSet(object): #general Det of Video
                     pass
             return val
 
-        anno = ET.ElementTree(file=f).getroot()
+        anno = ET(file=f).getroot()
         common_kv = {}
         objs = []
         for obj in anno.iterfind('./'):
