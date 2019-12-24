@@ -206,6 +206,6 @@ def LAP_Matching(Lis, Ris, CostFunc, Lapsolver = 'flow'):
 
 def brief_pos_bar(percentage=0):
     if percentage > 0.99999:
-        print('100 %% DONE!')
+        print('100 % DONE!')
     else:
         print('%.2f %%'%(percentage * 100), end='\r')
