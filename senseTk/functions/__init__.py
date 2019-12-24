@@ -6,7 +6,7 @@
 # mail: fengweitao@sensetime.com
 # Created Time: 2018年07月27日 星期五 15时32分36秒
 #########################################################################
-
+from __future__ import print_function
 import cv2
 import re
 import os
@@ -204,3 +204,8 @@ def LAP_Matching(Lis, Ris, CostFunc, Lapsolver = 'flow'):
     flow.release(uid)
     return matched, lmiss, list(rmiss)
 
+def brief_pos_bar(percentage=0):
+    if percentage > 0.99999:
+        print('100 %% DONE!')
+    else:
+        print('%.2f %%'%(percentage * 100), end='\r')
