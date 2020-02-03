@@ -7,11 +7,15 @@
 # Created Time: 2018年07月27日 星期五 11时58分11秒
 #########################################################################
 import sys
+import os
 from setuptools import setup, find_packages, Extension
 from distutils.version import LooseVersion, StrictVersion
 # from distutils.core import setup, Extension
 
-py_version = '27' if sys.version_info.major==2 else '35'
+BOOST_H = os.environ.get('BOOST_INCLUDE', '')
+BOOST_L = os.environ.get('BOOST_LIBRARY', '')
+
+py_version = '%d%d'%(sys.version_info.major, sys.version_info.minor)
 
 __version__ = '0.5.0'
 
@@ -54,7 +58,9 @@ setup(
                   './senseTk/extension/flow/flow.cpp']),
         Extension('senseTk.extension.boost_functional', sources=[
                   './senseTk/extension/functional/boost_functional.cpp'],
-                  libraries=['boost_python-py%s'%py_version]),
+                  libraries=['boost_python%s'%py_version],
+                  include_dirs=[BOOST_H],
+                  library_dirs=[BOOST_L]),
     ]
 )
 

@@ -138,7 +138,7 @@ namespace boost_functional {
     object iou_batch(object adets, object bdets) {
         object& al = adets;
         object& bl = bdets;
-        list ret; 
+        boost::python::list ret;
         ssize_t cnt = extract<ssize_t>(al.attr("__len__")());
         if (extract<ssize_t>(al.attr("__len__")())!=cnt) {
             return ret;
@@ -152,7 +152,7 @@ namespace boost_functional {
     };
 
     object test(int x) {
-        list ret;
+        boost::python::list ret;
         for (int i=0;i<x;++i)
             ret.append(i+1);
         return ret;
