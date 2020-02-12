@@ -44,7 +44,7 @@ class Det(bF.cDet):
     def _trim(self, sz = None, toInt = True):
         if sz is not None:
             w, h = sz
-            super(Det, self)._trim(w, h)
+            super(Det, self)._trim(int(w), int(h))
         if toInt: self._astype(int)
         return self
 
