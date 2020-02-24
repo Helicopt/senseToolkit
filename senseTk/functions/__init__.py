@@ -174,6 +174,8 @@ def LAP_Matching(Lis, Ris, CostFunc, Lapsolver = 'flow'):
     '''
     n = len(Lis)
     m = len(Ris)
+    if n <= 0 or m <=0:
+        return [], [i for i in range(n)], [i for i in range(m)]
     uid = int(time.time() * 10000 % int(1e9+7))
     maxn = int(2e6)
     thr = maxn - 1
