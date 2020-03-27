@@ -299,6 +299,7 @@ class TrackSet(object): #general Det of Video
         self.__idd = {}
         self.__cache_id = {}
         self.__cache_fr = {}
+        self.__n_id = 0
         if fn is not None:
             if os.path.isdir(fn):
                 fns = [os.path.join(fn, i) for i in os.listdir(fn)]
@@ -375,7 +376,14 @@ class TrackSet(object): #general Det of Video
     def allFr(self):
         return self.__frd.keys()
 
+    @property
+    def __nxt_id(self):
+        self.__n_id += 1
+        return self.__n_id
+
     def append_data(self, D):
+        if D.uid == -1:
+            D.uid = - self.__nxt_id
         if D.uid not in self.__idd:
             self.__idd[D.uid] = {}
         self.__idd[D.uid][D.fr] = D
