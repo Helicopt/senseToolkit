@@ -3,7 +3,7 @@ Useful python functions for computer vision
 
 ## Setup
 ```sh
-git clone git@gitlab.bj.sensetime.com:fengweitao/senseToolkit.git
+git clone git@this_site/senseToolkit.git
 ```
 
 ## Requirements
