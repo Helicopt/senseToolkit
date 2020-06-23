@@ -239,6 +239,11 @@ def inspect_data(x, tag=None, tmp_path=None, global_cnt=-1, silent=True, on_exit
         has_mxnet = True
     except:
         has_mxnet = False
+    try:
+        import numpy as np
+        has_npy = True
+    except:
+        has_npy = False
     def deal(a):
         if isinstance(a, set):
             return a
@@ -248,7 +253,7 @@ def inspect_data(x, tag=None, tmp_path=None, global_cnt=-1, silent=True, on_exit
             return a
         if isinstance(a, dict):
             return {i: deal(j) for i, j in a.items()}
-        if isinstance(a, np.ndarray):
+        if has_npy and isinstance(a, np.ndarray):
             return [deal(i) for i in a]
         if has_torch and isinstance(a, torch.Tensor):
             if not silent: print(a.shape)
@@ -256,9 +261,9 @@ def inspect_data(x, tag=None, tmp_path=None, global_cnt=-1, silent=True, on_exit
         if has_mxnet and isinstance(a, mxnet.ndarray.NDArray):
             if not silent: print(a.shape)
             return deal(a.asnumpy())
-        if isinstance(a, np.integer):
+        if has_npy and isinstance(a, np.integer):
             return int(a)
-        if isinstance(a, np.floating):
+        if has_npy and isinstance(a, np.floating):
             return float(a)
         if isinstance(a, senseTk.common.Det):
             return a.toList()
