@@ -11,6 +11,9 @@ import cv2
 import re
 import os
 import time
+import inspect
+import pickle
+import os.path as osp
 from ..extension import flow
 
 def streamForward(source, destination):
@@ -211,3 +214,156 @@ def brief_pos_bar(percentage=0):
         print('100 % DONE!')
     else:
         print('%.2f %%'%(percentage * 100), end='\r')
+
+global sfp_cnt
+sfp_cnt = 0
+
+def inspect_data(x, tag=None, tmp_path=None, global_cnt=-1, silent=True, on_exit=True):
+    if tag is None:
+        tag = inspect.getouterframes(inspect.currentframe())[-1].filename
+    if tmp_path is None:
+        path='/tmp/save_for_comparision.sfp'
+    else:
+        path = tmp_path
+    global sfp_cnt
+    sfp_cnt += 1
+    if global_cnt > 0 and sfp_cnt < global_cnt:
+        return
+    try:
+        import torch
+        has_torch = True
+    except:
+        has_torch = False
+    try:
+        import mxnet
+        has_mxnet = True
+    except:
+        has_mxnet = False
+    def deal(a):
+        if isinstance(a, set):
+            return a
+        if isinstance(a, (list, tuple)):
+            return [deal(i) for i in a]
+        if isinstance(a, (int, float, str, bytes)):
+            return a
+        if isinstance(a, dict):
+            return {i: deal(j) for i, j in a.items()}
+        if isinstance(a, np.ndarray):
+            return [deal(i) for i in a]
+        if has_torch and isinstance(a, torch.Tensor):
+            if not silent: print(a.shape)
+            return deal(a.detach().cpu().numpy())
+        if has_mxnet and isinstance(a, mxnet.ndarray.NDArray):
+            if not silent: print(a.shape)
+            return deal(a.asnumpy())
+        if isinstance(a, np.integer):
+            return int(a)
+        if isinstance(a, np.floating):
+            return float(a)
+        if isinstance(a, senseTk.common.Det):
+            return a.toList()
+        raise NotImplementedError('Unknown type %s'%type(a))
+    if not osp.exists(path):
+        d = {}
+    else:
+        try:
+            with open(path, 'rb') as fd:
+                d = pickle.load(fd)
+        except:
+            d = {}
+    d[tag] = deal(x)
+    with open(path, 'wb') as fd:
+        pickle.dump(d, fd, protocol=2)
+    if not silent: print()
+    if on_exit: exit(0)
+
+def compare(d1, d2, k1, k2, eps=1e-6, max_mistakes=10, miscnt=0):
+    kwargs = {'eps': eps, 'max_mistakes': max_mistakes, 'miscnt': miscnt}
+    def assertType(d1, d2, k1, k2):
+        if type(d1)!=type(d2):
+            print('typediff: %s (%s) vs %s (%s)'%(k1, type(d1), k2, type(d2)))
+            return False
+        return True
+    def assertLen(d1, d2, k1, k2):
+        if len(d1)!=len(d2):
+            print('lendiff: %s (%s) vs %s (%s)'%(k1, len(d1), k2, len(d2)))
+            return False
+        return True
+    def assertKey(d1, d2, k1, k2):
+        if len(set(d1.keys()) - set(d2.keys()))!=0 or len(set(d2.keys()) - set(d1.keys()))!=0:
+            print('keydiff: %s (%s) vs %s (%s)'%(k1, set(d1.keys()) - set(d2.keys()), k2, set(d2.keys()) - set(d1.keys()) ))
+            return False
+        return True
+    def assertValue(d1, d2, k1, k2):
+        nonlocal miscnt
+        if d1!=d2:
+            print('valdiff: %s (%s) vs %s (%s)'%(k1, d1, k2, d2))
+            miscnt += 1
+            if miscnt > max_mistakes:
+                return False
+        return True
+    def assertClose(d1, d2, k1, k2):
+        nonlocal miscnt
+        if abs(d1 - d2) > eps and abs(d1 - d2) / max(min(abs(d1), abs(d2)), eps) > eps: 
+            print('valdiff: %s (%s) vs %s (%s)'%(k1, d1, k2, d2))
+            miscnt += 1
+            if miscnt > max_mistakes:
+                return False
+        return True
+    def assertSet(d1, d2, k1, k2):
+        if len(d1 & d2) != len(d1) or len(d1) != len(d2):
+            print('set diff: (%d in common)' % len(d1 & d2))
+            print('    %s only (%d): '%(k1, len(d1 - d2)))
+            print('        %s'%(d1 - d2))
+            print('    %s only (%d): '%(k2, len(d2 - d1)))
+            print('        %s'%(d2 - d1))
+            return False
+        return True
+    if not assertType(d1, d2, k1, k2):
+        return False, miscnt + 1
+    found = False
+    if isinstance(d1, (list, tuple)):
+        found = True
+        if not assertLen(d1, d2, k1, k2): return False, miscnt + 1
+        for k, (i, j) in enumerate(zip(d1, d2)):
+            f, c = compare(i, j, k1+'[%d]'%k, k2+'[%d]'%k, **kwargs)
+            kwargs['miscnt'] = c
+            miscnt = c
+            if not f: return False, kwargs['miscnt']
+    if isinstance(d1, dict):
+        found = True
+        if not assertKey(d1, d2, k1, k2): return False, miscnt + 1
+        for k in d1.keys():
+            f, c = compare(d1[k], d2[k], k1+'.%s'%str(k), k2+'.%s'%str(k), **kwargs)
+            kwargs['miscnt'] = c
+            miscnt = c
+            if not f: return False, kwargs['miscnt']
+    if isinstance(d1, (int, str, bytes)):
+        found = True
+        if not assertValue(d1, d2, k1, k2): return False, miscnt
+    if isinstance(d1, float):
+        found = True
+        if not assertClose(d1, d2, k1, k2): return False, miscnt
+    if isinstance(d1, set):
+        found = True
+        if not assertSet(d1, d2, k1, k2): return False, miscnt + 1
+    assert found, 'Unknown Type %s'%type(d1)
+    return True, miscnt
+
+def dislpay_diff(path=None, eps=1e-7, max_value_diff=0):
+    if path is None:
+        path='/tmp/save_for_comparision.sfp'
+    with open(path, 'rb') as fd:
+        d = pickle.load(fd)
+    keys = list(d.keys())
+    for i, k1 in enumerate(keys):
+        print('***', k1, type(d[k1]), '***')
+        for j, k2 in enumerate(keys):
+            if i>=j: continue
+            print('--'*20)
+            f, c = compare(d[k1], d[k2], k1, k2, eps=eps, max_mistakes=max_value_diff)
+            print('--'*20)
+            if f:
+                print('%s is same as %s (eps %a, mistake %d)'%(k1, k2, eps, c))
+            else:
+                print('%s differs from %s (eps %a, mistake %d)'%(k1, k2, eps, c))
