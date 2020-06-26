@@ -309,7 +309,7 @@ def compare(d1, d2, k1, k2, eps=1e-6, max_mistakes=10, miscnt=0):
         return True
     def assertClose(d1, d2, k1, k2):
         nonlocal miscnt
-        if abs(d1 - d2) > eps and abs(d1 - d2) / max(min(abs(d1), abs(d2)), eps) > eps: 
+        if abs(d1 - d2) > eps or abs(d1 - d2) / max(min(abs(d1), abs(d2)), eps) > eps:
             print('valdiff: %s (%s) vs %s (%s)'%(k1, d1, k2, d2))
             miscnt += 1
             if miscnt > max_mistakes:
