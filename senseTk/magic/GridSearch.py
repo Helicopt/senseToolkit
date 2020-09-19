@@ -19,6 +19,7 @@ import operator
 import tempfile
 import re
 import logging
+import shutil
 
 USERLOG = logging.DEBUG + 5
 logging.addLevelName(USERLOG, 'USER')
@@ -71,7 +72,7 @@ class worker(threading.Thread):
         fd = open(bak, 'w')
         json.dump(self.holder.rec_json, fd, indent=2, sort_keys=True)
         fd.close()
-        os.system('mv %s %s' % (bak, self.holder.recfile))
+        shutil.move(bak, self.holder.recfile)
         self.holder.bb.save()
         pstr = 'progress: %.2f %% ( %d / %d )' % (self.holder.done*100./self.holder.tot,
                                                   self.holder.done, self.holder.tot)
@@ -275,7 +276,7 @@ class gridSearcher(object):
                 fd = open(bak, 'w')
                 json.dump(self.rec_json, fd, indent=2, sort_keys=True)
                 fd.close()
-                os.system('mv %s %s' % (bak, recfile))
+                shutil.move(bak, recfile)
                 self.bb.save()
                 for j in range(0, cc):
                     p[i] = j
