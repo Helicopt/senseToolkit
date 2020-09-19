@@ -13,7 +13,8 @@ import random
 import os
 import sys
 
-__all__=["siaCrop"]
+__all__ = ["siaCrop"]
+
 
 def get_crop_e(img, bbox, size_z=127, context_amount=0.5):
     x1, y1, x2, y2 = [float(x) for x in [bbox.x1, bbox.y1, bbox.x2, bbox.y2]]
@@ -27,9 +28,11 @@ def get_crop_e(img, bbox, size_z=127, context_amount=0.5):
     nw = w * scale_z
     nh = h * scale_z
 
-    im_crop_z = get_subwindow(img, [cy, cx], [size_z, size_z], [round(s_z), round(s_z)])
+    im_crop_z = get_subwindow(img, [cy, cx], [size_z, size_z], [
+                              round(s_z), round(s_z)])
 
-    return im_crop_z, scale_z, (size_z-1>>1, size_z-1>>1, nh, nw)
+    return im_crop_z, scale_z, (size_z-1 >> 1, size_z-1 >> 1, nh, nw)
+
 
 def get_crop_i(img, bbox, size_z=127, size_x=255, context_amount=0.5):
     x1, y1, x2, y2 = [float(x) for x in [bbox.x1, bbox.y1, bbox.x2, bbox.y2]]
@@ -48,13 +51,16 @@ def get_crop_i(img, bbox, size_z=127, size_x=255, context_amount=0.5):
     nw = w * scale_x
     nh = h * scale_x
 
-    im_crop_x = get_subwindow(img, [cy, cx], [size_x, size_x], [round(s_x), round(s_x)])
+    im_crop_x = get_subwindow(img, [cy, cx], [size_x, size_x], [
+                              round(s_x), round(s_x)])
 
-    return im_crop_x, scale_x, (size_x-1>>1, size_x-1>>1, nh, nw)
+    return im_crop_x, scale_x, (size_x-1 >> 1, size_x-1 >> 1, nh, nw)
+
 
 def mean(img):
     avg_color_per_row = np.average(img, axis=0)
     return np.average(avg_color_per_row, axis=0).astype(np.uint8)
+
 
 def get_subwindow(img, pos, model_sz, original_sz):
     means = mean(img)
@@ -73,7 +79,7 @@ def get_subwindow(img, pos, model_sz, original_sz):
     cymax = cymin + sz[1] - 1
 
     im = np.zeros((cxmax-cxmin+1, cymax-cymin+1, 3), np.uint8)
-    im[:,:] = means
+    im[:, :] = means
 
     x1 = max(cxmin, 0)
     y1 = max(cymin, 0)
@@ -93,10 +99,10 @@ def get_subwindow(img, pos, model_sz, original_sz):
 
     return im, im_np
 
-def siaCrop(im, dt, size_z = 127, size_x = 511, tag = 'x', ctx = 0.5):
-    if tag=='z':
-        return get_crop_e(im, dt, size_z = size_z, context_amount = ctx)
-    elif tag=='x':
-        return get_crop_i(im, dt, size_z = size_z, size_x = size_x, context_amount = ctx)
+
+def siaCrop(im, dt, size_z=127, size_x=511, tag='x', ctx=0.5):
+    if tag == 'z':
+        return get_crop_e(im, dt, size_z=size_z, context_amount=ctx)
+    elif tag == 'x':
+        return get_crop_i(im, dt, size_z=size_z, size_x=size_x, context_amount=ctx)
     return None
-    

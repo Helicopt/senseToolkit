@@ -34,6 +34,7 @@ import numpy as np
 global IMGAapp
 IMGAapp = None
 
+
 def getQImg(im):
     if im is None:
         exit(233)
@@ -41,10 +42,12 @@ def getQImg(im):
     im = array2qimage(im)
     return QPixmap.fromImage(im)
 
+
 def requireQA():
     global IMGAapp
     if IMGAapp is None:
         IMGAapp = QApplication([sys.argv[0]])
+
 
 class cacheWorker(threading.Thread):
 
@@ -68,7 +71,7 @@ class cacheWorker(threading.Thread):
                 for i in range(en, self.n):
                     ctx.imgcache[i] = None, None
                 self.lock.release()
-                if ctx.ind!=self.pre:
+                if ctx.ind != self.pre:
                     for i in range(be, en):
                         _, one = ctx.imgcache[i]
                         if one is None:
@@ -81,18 +84,21 @@ class cacheWorker(threading.Thread):
                                 if ctx._cache:
                                     if ctx.imgcache[i][1] is None:
                                         try:
-                                            ctx.imgcache[i] = label, FileAgent.getFile(one)
+                                            ctx.imgcache[i] = label, FileAgent.getFile(
+                                                one)
                                         except:
-                                            sys.stderr.write('[failed] get %s error.\n'%label)
+                                            sys.stderr.write(
+                                                '[failed] get %s error.\n' % label)
                                             continue
                                     _, f = ctx.imgcache[i]
                                 else:
                                     try:
                                         f = FileAgent.getFile(one)
                                     except:
-                                        sys.stderr.write('[failed] get %s error.\n'%label)
+                                        sys.stderr.write(
+                                            '[failed] get %s error.\n' % label)
                                         continue
-                                im = f.img(refresh = udp)
+                                im = f.img(refresh=udp)
                             elif isinstance(one, np.ndarray):
                                 label = 'nolabel'
                                 im = one
@@ -104,7 +110,7 @@ class cacheWorker(threading.Thread):
                                     ctx.imgcache[i] = label, im
                             else:
                                 label = one.url
-                                im = one.img(refresh = udp)
+                                im = one.img(refresh=udp)
                                 if ctx._cache:
                                     ctx.imgcache[i] = label, im
                             # ctx.imgcache[i] = label, one
@@ -124,7 +130,7 @@ class IMGallery(QWidget):
     E_MRELEASE = 4
     E_INFOCLICK = 5
 
-    def __init__(self, data, ind = 0, top_left = (0, 0), size = (1600, 900), cache = True):
+    def __init__(self, data, ind=0, top_left=(0, 0), size=(1600, 900), cache=True):
         super(IMGallery, self).__init__()
         global IMGAapp
         self.app = IMGAapp
@@ -142,9 +148,9 @@ class IMGallery(QWidget):
 
     @cache.setter
     def cache(self, value):
-        if value==self._cache:
+        if value == self._cache:
             return
-        if value==False:
+        if value == False:
             self._cache = False
         else:
             self._cache = True
@@ -155,8 +161,8 @@ class IMGallery(QWidget):
 
     def renewPosBar(self, x, y, ox, oy, etype):
         content = 'POS:\n%d %d\n\nORIGIN_POS:\n%d %d\n\nLAST_POS:\n%d %d\n\nW: %d, H: %d'\
-        %(x, y, ox, oy, self.pcx, self.pcy, ox - self.pcx, oy - self.pcy)
-        if etype==IMGallery.E_MPRESS:
+            % (x, y, ox, oy, self.pcx, self.pcy, ox - self.pcx, oy - self.pcy)
+        if etype == IMGallery.E_MPRESS:
             self.pcx = ox
             self.pcy = oy
         self.posBar.setText(content)
@@ -183,8 +189,10 @@ class IMGallery(QWidget):
 
         self.imgLabel = QLabel()
         # print dir(self.imgLabel)
-        self.imgLabel.setMinimumWidth(max(self.size[0] - max(size[0]/5, 120), 0))
-        self.imgLabel.setAlignment(QtCore.Qt.AlignVCenter|QtCore.Qt.AlignHCenter)
+        self.imgLabel.setMinimumWidth(
+            max(self.size[0] - max(size[0]/5, 120), 0))
+        self.imgLabel.setAlignment(
+            QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
         self.ind = ind
         self.__preclick = 0
         self.pcx = 0
@@ -219,7 +227,7 @@ class IMGallery(QWidget):
         hbox.addWidget(self.imgLabel)
         hbox.addLayout(vbox)
 
-        hbox.setStretch(0,1)
+        hbox.setStretch(0, 1)
         self.setLayout(hbox)
 
         self.navi = vbox
@@ -243,10 +251,11 @@ class IMGallery(QWidget):
                 yy = int(py*self.last_scale)
                 self.renewPosBar(px, py, xx, yy, tp)
                 if callable(self.callback):
-                    ret = self.callback(None, self.ind, type=tp, info = infoPan,
-                        x = px, y = py,
-                        origin_x = xx, origin_y = yy)
-                    if ret: self.refresh()
+                    ret = self.callback(None, self.ind, type=tp, info=infoPan,
+                                        x=px, y=py,
+                                        origin_x=xx, origin_y=yy)
+                    if ret:
+                        self.refresh()
             return mme
         self.imgLabel.setMouseTracking(True)
         self.imgLabel.mouseMoveEvent = gen_me(IMGallery.E_HOVER)
@@ -255,12 +264,12 @@ class IMGallery(QWidget):
 
         return self
 
-    def __gain(self, ind, udp = False):
+    def __gain(self, ind, udp=False):
         im = None
         if self._cache and not udp:
             label, im = self.imgcache[ind]
             if hasattr(im, 'img'):
-                im = im.img(refresh = False)
+                im = im.img(refresh=False)
         if im is None:
             if self._cache:
                 self.cacheThread.lock.acquire()
@@ -274,7 +283,7 @@ class IMGallery(QWidget):
                     _, f = self.imgcache[ind]
                 else:
                     f = FileAgent.getFile(one)
-                im = f.img(refresh = udp)
+                im = f.img(refresh=udp)
             elif isinstance(one, np.ndarray):
                 label = 'nolabel'
                 im = one
@@ -286,7 +295,7 @@ class IMGallery(QWidget):
                     self.imgcache[ind] = label, im
             else:
                 label = one.url
-                im = one.img(refresh = udp)
+                im = one.img(refresh=udp)
                 if self._cache:
                     self.imgcache[ind] = label, im
             if self._cache:
@@ -294,8 +303,8 @@ class IMGallery(QWidget):
         return label, im.copy() if self._cache else im
 
     def __adjustStr(self, x):
-        mx = max(self.size[0] - 100, 0)>>3
-        if len(x)>mx:
+        mx = max(self.size[0] - 100, 0) >> 3
+        if len(x) > mx:
             part = (mx - 3) >> 1
             x = x[:part]+'...'+x[-part:]
         return x
@@ -309,19 +318,20 @@ class IMGallery(QWidget):
         return int(im.shape[1]/mi), int(im.shape[0]/mi)
         # return cv2.resize(im, (int(im.shape[1]/mi), int(im.shape[0]/mi)))
 
-    def refresh(self, update = False):
+    def refresh(self, update=False):
         self.setFocus()
         label, im = self.__gain(self.ind, update)
         if callable(self.callback):
-            self.callback(im, self.ind, type=IMGallery.E_REFRESH, info=self.infoPanel)
+            self.callback(im, self.ind, type=IMGallery.E_REFRESH,
+                          info=self.infoPanel)
         self.setWindowTitle('IMGallery' + '  -  ' + self.__adjustStr(label))
         self.img_size = self.__adjustImSize(im)
         im = cv2.resize(im, self.img_size)
         im = getQImg(im)
         self.imgLabel.setPixmap(im)
-        self.disButton.setText('%d/%d'%(self.ind+1, len(self.data)))
+        self.disButton.setText('%d/%d' % (self.ind+1, len(self.data)))
 
-    def show(self, callback = None):
+    def show(self, callback=None):
         self.callback = callback
         super(IMGallery, self).show()
         self.refresh()
@@ -333,10 +343,12 @@ class IMGallery(QWidget):
 
     def S_infoClick(self, e):
         sel = e.row()
-        if sel>=0 and sel < self.infoPanel.count():
+        if sel >= 0 and sel < self.infoPanel.count():
             if callable(self.callback):
-                ret = self.callback(None, self.ind, type=IMGallery.E_INFOCLICK, sel=sel)
-                if ret: self.refresh()
+                ret = self.callback(
+                    None, self.ind, type=IMGallery.E_INFOCLICK, sel=sel)
+                if ret:
+                    self.refresh()
 
     def S_prev(self, *args, **kwargs):
         if 'd' not in kwargs:
@@ -356,7 +368,7 @@ class IMGallery(QWidget):
         self.ind = min(self.ind, len(self.data)-1)
         self.refresh()
 
-    def S_fromhead(self, offset = 0):
+    def S_fromhead(self, offset=0):
         pre = self.__preclick
         self.__preclick = time.time()
         if self.__preclick - pre < 0.5:
@@ -364,25 +376,26 @@ class IMGallery(QWidget):
         self.ind = offset
         self.refresh()
 
-    def S_fromtail(self, offset = 0):
+    def S_fromtail(self, offset=0):
         self.ind = len(self.data) - 1 - offset
         self.refresh()
 
     def S_collapse(self, *args, **kwargs):
         status = kwargs['status'] if 'status' in kwargs else None
-        if status==None:
+        if status == None:
             self.infoStatus = not self.infoStatus
         else:
             self.infoStatus = status
         if self.infoStatus:
             self.infoPanel.show()
-            self.imgLabel.setMinimumWidth(max(self.size[0] - max(self.size[0]/5, 120), 0))
+            self.imgLabel.setMinimumWidth(
+                max(self.size[0] - max(self.size[0]/5, 120), 0))
             self.collapseButton.setText('Collapse')
         else:
             self.infoPanel.hide()
             self.imgLabel.setMinimumWidth(max(self.size[0] - 120, 0))
             self.collapseButton.setText('Extend')
-        self.resize(0,0)
+        self.resize(0, 0)
         self.resize(*self.size)
         self.refresh()
 
@@ -406,6 +419,7 @@ class IMGallery(QWidget):
         self.cache = False
         del self.cacheThread
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     requireQA()
-    IMGallery([np.zeros((1080,1920,3), dtype='uint8')]*10).show()
+    IMGallery([np.zeros((1080, 1920, 3), dtype='uint8')]*10).show()

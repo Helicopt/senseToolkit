@@ -10,6 +10,7 @@ import sys
 import os
 from setuptools import setup, find_packages, Extension
 from distutils.version import LooseVersion, StrictVersion
+import warnings
 # from distutils.core import setup, Extension
 
 BOOST_H = os.environ.get('BOOST_INCLUDE', '')
@@ -24,14 +25,15 @@ __required__ = [
     'qimage2ndarray>=1.6',
     'six',
     'lxml',
+    'pyyaml',
     'BeautifulTable',
 ]
 required = __required__
 try:
     import cv2
-    print('Searching for cv2==%s' % cv2.__version__)
-    assert LooseVersion(cv2.__version__) >= LooseVersion('2.4.10')
-    print('Best match: cv2 %s' % cv2.__version__)
+    print('Searching for cv2==%s' % cv2.version.opencv_version)
+    assert LooseVersion(cv2.version.opencv_version) >= LooseVersion('2.4.10')
+    print('Best match: cv2 %s' % cv2.version.opencv_version)
 except(ImportError, AssertionError):
     required.append('opencv-python>=2.4.10')
 
@@ -39,12 +41,17 @@ try:
     import PyQt5
     print('Searching for PyQt5')
 except(ImportError, AssertionError):
-    print('Cannot find optional module PyQt5 or python-qt5, you need to install it before you use IMGallery module')
+    import sys
+    if sys.version_info.major == 3:
+        required.append('PyQt5')
+    else:
+        warnings.warn(
+            'Cannot find optional module PyQt5 or python-qt5, you need to install it before you use IMGallery module', ImportWarning)
 
 setup(
     name='senseToolkit',
     version=__version__,
-    description='Python functions for CV process',
+    description='Python functions for convenience',
     author='Toka',
     author_email='fengweitao@sensetime.com',
     url='https://github.com/Helicopt/senseToolkit',

@@ -12,4 +12,3 @@ from . import tracking
 from . import magic
 
 __version__ = '0.5.0'
-

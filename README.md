@@ -1,7 +1,9 @@
 # senseToolkit
+
 Useful python functions for computer vision
 
 ## Setup
+
 ```sh
 git clone git@this_site/senseToolkit.git
 ```
@@ -9,22 +11,26 @@ git clone git@this_site/senseToolkit.git
 ## Requirements
 
 Neccessary:
+
 - opencv>=2.4.10
 - numpy>=1.12.1
 - six
 - BeautifulTable
 
 IMGallery optional:
+
 - qimage2ndarray>=1.6
 - PyQt5
 
 ## Local build(with sudo)
+
 ```sh
 cd senseToolkit
 sudo python setup.py build_ext --inplace install
 ```
 
 ## Server build(without sudo)
+
 ```sh
 cd senseToolkit
 alias py=/your_local_python/bin/python
@@ -34,13 +40,15 @@ py setup.py build_ext --inplace install
 Also you can build in your local directories while not in the system path.
 
 ## Notes
+
 If cannot find the package, try to add the egg file to your pythonpath
 
-i.e., export PYTHONPATH=$PYTHONPATH:/installed\_place/senseToolkit-[version]-[arch].egg
+i.e., export PYTHONPATH=\$PYTHONPATH:/installed_place/senseToolkit-[version]-[arch].egg
 
-***Now it can be used in both python2 and python3***
+**_Now it can be used in both python2 and python3_**
 
 ## Apps
+
 ```sh
 usage: python -m senseTk.apps.visualize [-h] [--ifmt IFMT] [--istart ISTART]
                                         [--trackset TRACKSET]
@@ -95,7 +103,7 @@ optional arguments:
 >>> gt = TrackSet('/home/MOT/train/MOT16-04/gt/gt.txt') #open a file in MOT format
 >>> for i in gt[1]:
 ...     print i # print all items in frame 1
-... 
+...
 1,1,1363.00,569.00,103.00,241.00,0.860,1,1,-1
 1,2,371.00,410.00,80.00,239.00,1.000,1,1,-1
 1,3,103.00,549.00,83.00,251.00,1.000,1,1,-1
@@ -104,9 +112,9 @@ optional arguments:
 1,6,632.00,761.00,100.00,251.00,0.319,1,1,-1
 1,7,623.00,901.00,144.00,123.00,1.000,11,0,-1
 
->>> for i in gt(1).frameRange():           
+>>> for i in gt(1).frameRange():
 ...     print gt(1)[i][0] # print the target who's id is 1, in all frames
-... 
+...
 1,1,1363.00,569.00,103.00,241.00,0.860,1,1,-1
 2,1,1362.00,568.00,103.00,241.00,0.862,1,1,-1
 3,1,1362.00,568.00,103.00,241.00,0.862,1,1,-1
@@ -148,7 +156,7 @@ Class Det:
 
   returns the right-bottom point with offset(ox, oy), auto trim to int (useful in cv2.rectangle or other paint functions)
 
-- _trim(sz = None, toInt = True)
+- \_trim(sz = None, toInt = True)
 
   inplace function to trim to integer
 
@@ -156,7 +164,7 @@ Class Det:
 
   function to trim to integer (copy)
 
-- _astype(dtype)
+- \_astype(dtype)
 
   inplace function to change to dtype
 
@@ -173,21 +181,24 @@ Class Det:
   to (x1, y1, w, h)
 
 Class TrackSet:
+
 ```python
 def __init__(self, fn = None, dealer = None, filter = None, formatter = None):
 ```
+
 - if dealer is set, each row will be sent to dealer and the dealer is expected to return a Det
 - if filter is set, only the rows satisfy filter(row) will be added
 - if formatter is set, all rows will be formatted with the formatter, otherwise all rows will be read in MOT format or labeled format (auto-select)
-> A formatter includes items in [fr, id, la, cf, st] and coordinates in [x1, y1, w, h, cx, cy, x2, y2]
->
-> normally, there are three styles to read coordinates, [x1, y1, w, h] or [cx, cy, w, h] or [x1, y1, x2, y2]
->
-> fr is the frame id, id is the target id, la is the label, cf is confidence, st is status
->
-> then we use ".type" to format the data type, "i" for integer, "f" for float, "s" for string, default choice is float
->
-> e.g., "fr.i,id.i,x1,y1,w,h,-1,st.i,-1,-1" is one format, meaning fr and id is integers and x1, y1, w, h is float and st is integer, other places filled with -1(or other something) will be all ignored.
+
+  > A formatter includes items in [fr, id, la, cf, st] and coordinates in [x1, y1, w, h, cx, cy, x2, y2]
+  >
+  > normally, there are three styles to read coordinates, [x1, y1, w, h] or [cx, cy, w, h] or [x1, y1, x2, y2]
+  >
+  > fr is the frame id, id is the target id, la is the label, cf is confidence, st is status
+  >
+  > then we use ".type" to format the data type, "i" for integer, "f" for float, "s" for string, default choice is float
+  >
+  > e.g., "fr.i,id.i,x1,y1,w,h,-1,st.i,-1,-1" is one format, meaning fr and id is integers and x1, y1, w, h is float and st is integer, other places filled with -1(or other something) will be all ignored.
 
 - allPed()
 
@@ -197,7 +208,7 @@ def __init__(self, fn = None, dealer = None, filter = None, formatter = None):
 
   returns a list contrains all frame numbers
 
-- append\_data(det)
+- append_data(det)
 
   append a new det into trackset
 
@@ -278,7 +289,6 @@ IMGallery(['%d.jpg'%i for i in range(100)]).show()
 vid = VideoClipReader('myvideo.avi')
 IMGallery(vid).show() # all you need is to put in a class having the __getitem__ method and returing a image(numpy)
 ```
-
 
 #### Class TableCapture
 
