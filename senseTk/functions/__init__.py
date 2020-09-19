@@ -13,6 +13,7 @@ import os
 import time
 import inspect
 import pickle
+import warnings
 import os.path as osp
 from ..extension import flow
 from ..common import Det
@@ -184,49 +185,80 @@ def autoPattern(path, loose_fmt=True):
         return pre
 
 
-def LAP_Matching(Lis, Ris, CostFunc, Lapsolver='flow'):
+def LAP_Matching(Lis, Ris, CostFunc, Lapsolver='flow', CostFirst=False):
     '''
     Lis, Ris: two list of items, representing Left side
               and the Right side nodes of the Bipartie-Graph
     CostFunc: cost function to create a weighted edge (of 2 nodes),
               return a float in range (0,1] representing the
               weight and return None or 0 representing no such edge
-    Lapsolver: Currently support flow module only
+    Lapsolver: flow - self built flow optimizer
+               scipy - scipy.optimize.linear_sum_assignment
     '''
-    n = len(Lis)
-    m = len(Ris)
-    if n <= 0 or m <= 0:
-        return [], [i for i in range(n)], [i for i in range(m)]
-    uid = int(time.time() * 10000 % int(1e9+7))
-    maxn = int(2e6)
-    thr = maxn - 1
-    alpha = 1e6
-    flow.createFlow(uid)
-    flow.clear(uid)
-    flow.setThr(uid, thr)
-    flow.setNodes(uid, n, m)
-    for i, li in enumerate(Lis):
-        for j, ri in enumerate(Ris):
-            cost = CostFunc(li, ri)
-            if cost is not None and cost > 0:
-                c = float(cost) * alpha
-                c = maxn - int(c)
-                if c >= thr:
-                    continue
-                flow.addEdge(uid, i+1, n+j+1, c)
-    match = flow.flow(uid)
-    matched = []
-    lmiss = []
-    rmiss = set([i for i in range(m)])
-    for i in range(n):
-        ind = match[i + 1] - n - 1
-        if ind >= 0:
-            matched.append((i, ind))
-            rmiss.remove(ind)
-        else:
-            lmiss.append(i)
-    flow.release(uid)
-    return matched, lmiss, list(rmiss)
+    if Lapsolver == 'flow':
+        n = len(Lis)
+        m = len(Ris)
+        if n <= 0 or m <= 0:
+            return [], [i for i in range(n)], [i for i in range(m)]
+        uid = int(time.time() * 10000 % int(1e9+7))
+        maxn = int(2e6)
+        eps = 2e-6
+        thr = maxn - 1
+        alpha = 1e6
+        flow.createFlow(uid)
+        flow.clear(uid)
+        flow.setThr(uid, thr)
+        flow.setNodes(uid, n, m)
+        aff = {}
+        for i, li in enumerate(Lis):
+            for j, ri in enumerate(Ris):
+                cost = CostFunc(li, ri)
+                if CostFirst:
+                    cost += eps
+                aff[(i, j)] = cost
+                if cost is not None and cost > 0:
+                    c = float(cost) * alpha
+                    c = maxn - int(c)
+                    if c >= thr:
+                        continue
+                    flow.addEdge(uid, i+1, n+j+1, c)
+        match = flow.flow(uid)
+        matched = []
+        lmiss = []
+        rmiss = set([i for i in range(m)])
+        for i in range(n):
+            ind = match[i + 1] - n - 1
+            if ind >= 0:
+                if CostFirst and aff[(i, ind)] < eps*2:
+                    lmiss.append(i)
+                else:
+                    matched.append((i, ind))
+                    rmiss.remove(ind)
+            else:
+                lmiss.append(i)
+        flow.release(uid)
+        return matched, lmiss, list(rmiss)
+    elif Lapsolver == 'scipy':
+        try:
+            from scipy.optimize import linear_sum_assignment
+            import numpy as np
+        except ImportError:
+            warnings.warn('scipy not installed, use flow instead')
+            return LAP_Matching(Lis, Ris, CostFunc=CostFunc, CostFirst=CostFirst)
+        mat = [[CostFunc(Li, Ri) for j, Ri in enumerate(Ris)]
+               for i, Li in enumerate(Lis)]
+        mat = - np.array(mat)
+        ret = linear_sum_assignment(mat)
+        matched = []
+        lmiss = set([i for i in range(len(Lis))])
+        rmiss = set([i for i in range(len(Ris))])
+        for i, j in zip(*ret):
+            matched.append((int(i), int(j)))
+            lmiss.remove(int(i))
+            rmiss.remove(int(j))
+        return matched, list(lmiss), list(rmiss)
+    else:
+        raise NotImplementedError('cannot find lap solver [%s]' % Lapsolver)
 
 
 def brief_pos_bar(percentage=0):
