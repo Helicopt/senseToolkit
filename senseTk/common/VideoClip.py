@@ -6,7 +6,7 @@
 # mail: fengweitao@sensetime.com
 # Created Time: 2018年07月27日 星期五 14时34分28秒
 #########################################################################
-from senseTk.functions import autoPattern
+from ..functions import autoPattern
 import math
 import os
 import cv2

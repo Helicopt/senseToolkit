@@ -20,6 +20,7 @@ from re import *
 from copy import copy
 import tempfile
 import time
+from threading import Lock
 
 img_exts = ['png', 'jpg', 'jpeg', 'bmp', 'tiff']
 
@@ -82,8 +83,10 @@ class ftpFile(object):
         self.refresh()
         self.__im = None
         self.__fn = None
+        self.lock = Lock()
 
     def refresh(self):
+        self.lock.acquire()
         try:
             pwd = self.con.pwd()
             self.con.cwd(self.url)
@@ -115,6 +118,7 @@ class ftpFile(object):
             self.__mod = arr[0]
             self.__size = int(arr[4])
             self.__time = arr[5]+' '+arr[6]+' '+arr[7]
+        self.lock.release()
 
     def is_dir(self):
         return self.__mod[0] == 'd'
@@ -135,6 +139,7 @@ class ftpFile(object):
         return split('\.', self.url)[-1].lower() in img_exts and self.is_file()
 
     def list(self):
+        self.lock.acquire()
         if self.is_dir() and self.canRead() and self.canExec():
             sub = []
             self.con.clear_buffer()
@@ -156,6 +161,7 @@ class ftpFile(object):
                             + 'not directory ' if not self.is_dir() else ''
                             + 'no permission ' if not self.canRead() else ''
                             + 'cannot enter ' if not self.canExec() else '')
+        self.lock.release()
 
     def canRead(self, admin=True):
         return self.__mod[1] == 'r' and admin or self.__mod[7] == 'r'
@@ -193,6 +199,7 @@ class ftpFile(object):
         return cb
 
     def download(self, fd=None):
+        self.lock.acquire()
         if self.is_file():
             if fd is None:
                 if self.__fn is None:
@@ -201,6 +208,7 @@ class ftpFile(object):
                     fd = open(self.__fn, 'wb')
             self.con.retrbinary('RETR %s' % self.url, ftpFile.__transfer(fd))
             fd.close()
+        self.lock.release
         return self
 
     def __str__(self):
@@ -232,6 +240,7 @@ class httpFile(object):
         self.__fn = None
         self.__im = None
         self.conn = httplib.HTTPConnection(self.host, timeout=timeout)
+        self.lock = Lock()
 
     @staticmethod
     def createTmpFile(item=None):
@@ -242,6 +251,7 @@ class httpFile(object):
         return os.fdopen(fd, 'wb'), fn
 
     def download(self, fd=None):
+        self.lock.acquire()
         # print dir(self.conn)
         h = self.conn
         h.request('GET', self.url)
@@ -259,6 +269,7 @@ class httpFile(object):
                 fd = open(self.__fn, 'wb')
         fd.write(receive)
         fd.close()
+        self.lock.release()
         return self
 
     def release_tmp(self):
