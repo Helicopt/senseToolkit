@@ -176,7 +176,8 @@ class ftpFile(object):
         if self.__fn is not None:
             try:
                 if os.path.isfile(self.__fn):
-                    os.system('rm %s' % self.__fn)
+                    # os.system('rm %s' % self.__fn)
+                    os.remove(self.__fn)
             except Exception as e:
                 pass
 
@@ -276,7 +277,8 @@ class httpFile(object):
         if self.__fn is not None:
             try:
                 if os.path.isfile(self.__fn):
-                    os.system('rm %s' % self.__fn)
+                    # os.system('rm %s' % self.__fn)
+                    os.remove(self.__fn)
                 self.__fn = None
             except Exception as e:
                 pass

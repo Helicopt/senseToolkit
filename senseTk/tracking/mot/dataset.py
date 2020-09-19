@@ -13,6 +13,7 @@ from senseTk.magic import *
 from senseTk.common import *
 import json
 import re
+import shutil
 
 USERLOG = logging.DEBUG + 5
 logging.addLevelName(USERLOG, 'USER')
@@ -118,7 +119,7 @@ def make_dataset(data, destination, args=None):
             os.mkdir(one_path+'img1')
         except:
             pass
-        os.system('cp %s %s' % (v[1], one_path+v[0]+'.'+v[1].split('.')[-1]))
+        shutil.copy(v[1], one_path+v[0]+'.'+v[1].split('.')[-1])
         fd = open(one_path+'info.txt', 'w')
         fd.write(v[0]+'.'+v[1].split('.')[-1]+'\n')
         fd.write(v[0]+'\n')
