@@ -11,7 +11,7 @@ from senseTk.common import *
 from senseTk.functions import *
 from senseTk.magic import *
 
-if __name__=='__main__':
+if __name__ == '__main__':
     # __author__ == '__toka__'
     print senseTk.__version__
     # vid = VideoClipReader('/home/sensetime/data/MOT16video/MOT16-05.avi')
@@ -28,9 +28,11 @@ if __name__=='__main__':
     # data = ['ftp://10.1.30.165:2121/img1/%06d.jpg'%i for i in xrange(1,100)]
     # data = [getFile('ftp://10.1.30.165:2121/img1/%06d.jpg'%i) for i in xrange(1,100)]
     data = VideoClipReader('/home/sensetime/data/MOT16video/MOT16-05.avi')
+
     def cb(im, ind, **kwargs):
-    	import cv2
-    	cv2.rectangle(im, (50,50), (60, 60+ind), (0,0,0), 1)
-        if kwargs['type']=='refresh': kwargs['info'].setText('%03d'%ind)
+        import cv2
+        cv2.rectangle(im, (50, 50), (60, 60+ind), (0, 0, 0), 1)
+        if kwargs['type'] == 'refresh':
+            kwargs['info'].setText('%03d' % ind)
     requireQA()
     _ = IMGallery(data).show(cb)
