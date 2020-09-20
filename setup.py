@@ -25,9 +25,9 @@ __required__ = [
 required = __required__
 try:
     import cv2
-    print('Searching for cv2==%s' % cv2.version.opencv_version)
-    assert LooseVersion(cv2.version.opencv_version) >= LooseVersion('2.4.10')
-    print('Best match: cv2 %s' % cv2.version.opencv_version)
+    print('Searching for cv2==%s' % cv2.__version__)
+    assert LooseVersion(cv2.__version__) >= LooseVersion('2.4.10')
+    print('Best match: cv2 %s' % cv2.__version__)
 except(ImportError, AssertionError):
     required.append('opencv-python>=2.4.10')
 
