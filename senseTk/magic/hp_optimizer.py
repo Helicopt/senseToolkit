@@ -120,7 +120,7 @@ class HyperParamOptimizer:
             pickle.dump(self._data, fd)
         self.lock.unlock()
 
-    def optimize(self, hyper_params=None):
+    def optimize(self, hyper_params=None, static=True):
 
         def func_wrapper(old_func):
             if hyper_params is None:
@@ -135,6 +135,7 @@ class HyperParamOptimizer:
 
             @functools.wraps(old_func)
             def new_func(*args, **kwargs):
+                ctx = args[0] if len(args) else None
                 if not self._check_inputs(arg_info, args, kwargs, hp_name):
                     return old_func(*args, **kwargs)
                 if self._mode == 'train':
@@ -147,7 +148,10 @@ class HyperParamOptimizer:
                         new_args, new_kwargs = self._build_new_inputs(
                             arg_info, args, kwargs, hp_name, hp)
                         out = old_func(*new_args, **new_kwargs)
-                        score = self._related_funcs[fname](out)
+                        if static:
+                            score = self._related_funcs[fname](out)
+                        else:
+                            score = self._related_funcs[fname](ctx, out)
                         if best_score is None or score > best_score:
                             best_score = score
                             best_hp = hp
