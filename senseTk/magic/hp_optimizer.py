@@ -6,6 +6,7 @@ import threading
 import time
 import shutil
 import numpy as np
+import warnings
 from .file_lock import CFileLock
 
 
@@ -249,7 +250,7 @@ class HyperParamOptimizer:
                     best_score = v
                     best_hp = inverse(hp_names, k)
             if best_hp is None:
-                raise ValueError('no data for evaluation')
+                warnings.warn('function %s: no data for evaluation' % fname)
             else:
                 self._data[fname]['best'] = best_hp
                 self._data[fname]['best_score'] = best_score
@@ -292,7 +293,6 @@ class HyperParamOptimizer:
                     best_out = None
                     best_score = None
                     best_hp = None
-                    assert fname in self._related_funcs, 'evaluate function not found'
                     # while start <= end and hp <= end or start >= end and hp >= end:
                     #     new_args, new_kwargs = self._build_new_inputs(
                     #         arg_info, args, kwargs, hp_name, hp)
@@ -314,6 +314,7 @@ class HyperParamOptimizer:
                         new_args, new_kwargs = self._build_new_inputs(
                             arg_info, args, kwargs, item)
                         out = old_func(*new_args, **new_kwargs)
+                        assert fname in self._related_funcs, 'evaluate function not found'
                         if static:
                             score = self._related_funcs[fname](out)
                         else:
