@@ -163,6 +163,7 @@ class HyperParamOptimizer:
         self._mode = mode
         self._strategy = strategy
         self._generate_id()
+        self.test_mode_modules = {}
 
     @staticmethod
     def _build_new_inputs(arg_info, args, kw_args, hp):
@@ -289,7 +290,8 @@ class HyperParamOptimizer:
                 ctx = args[0] if len(args) else None
                 if not self._check_inputs(arg_info, args, kwargs, hyper_params):
                     return old_func(*args, **kwargs)
-                if self._mode == 'train':
+                training = self._mode == 'train' and fname not in self.test_mode_modules
+                if training:
                     best_out = None
                     best_score = None
                     best_hp = None
@@ -327,7 +329,7 @@ class HyperParamOptimizer:
                             (item, score))
                     # self.save()
 
-                if self._strategy == 'best' and self._mode == 'train':
+                if self._strategy == 'best' and training:
                     return best_out
                 else:
                     self._calc_best()
@@ -354,6 +356,10 @@ class HyperParamOptimizer:
                     raise ValueError('unknown matching target')
             return old_func
         return func_wrapper
+
+    def test_mode(self, func):
+        self.test_mode_modules[func.__name__] = True
+        return func
 
     def get_hyper_params(self):
         self._calc_best()
