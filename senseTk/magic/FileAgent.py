@@ -81,9 +81,9 @@ class ftpFile(object):
         self.con = con
         self.__parent = parent
         self.lock = Lock()
-        self.refresh()
         self.__im = None
         self.__fn = None
+        self.refresh()
 
     def refresh(self):
         self.lock.acquire()
