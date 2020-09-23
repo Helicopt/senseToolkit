@@ -80,10 +80,10 @@ class ftpFile(object):
         self.url = url
         self.con = con
         self.__parent = parent
+        self.lock = Lock()
         self.refresh()
         self.__im = None
         self.__fn = None
-        self.lock = Lock()
 
     def refresh(self):
         self.lock.acquire()
@@ -237,11 +237,11 @@ class httpFile(object):
         self.host = rs.netloc
         self.path = rs.path
         self.url = rs.path+'?'+rs.query+'#'+rs.fragment
+        self.lock = Lock()
         # print self.url
         self.__fn = None
         self.__im = None
         self.conn = httplib.HTTPConnection(self.host, timeout=timeout)
-        self.lock = Lock()
 
     @staticmethod
     def createTmpFile(item=None):
