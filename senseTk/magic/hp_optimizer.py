@@ -148,7 +148,7 @@ class HyperParamOptimizer:
 
     ext = '.hppt'
 
-    def __init__(self, name, path='/tmp', mode='train', strategy='best', sample_num=3):
+    def __init__(self, name, path='/tmp', mode='train', strategy='best', sample_num=3, enable=True):
         self._name = name
         self._path = path
         if os.path.isdir(self._path):
@@ -164,6 +164,16 @@ class HyperParamOptimizer:
         self._strategy = strategy
         self._generate_id()
         self.test_mode_modules = {}
+        self._en = enable
+
+    def disable():
+        self._en = False
+
+    def enable():
+        self._en = True
+
+    def is_enabled():
+        return self._en
 
     @staticmethod
     def _build_new_inputs(arg_info, args, kw_args, hp):
@@ -276,7 +286,7 @@ class HyperParamOptimizer:
     def optimize(self, hyper_params=None, static=True):
 
         def func_wrapper(old_func):
-            if hyper_params is None:
+            if hyper_params is None or not self.is_enabled():
                 return old_func
             arg_info = inspect.getfullargspec(old_func)
             fname = old_func.__name__
