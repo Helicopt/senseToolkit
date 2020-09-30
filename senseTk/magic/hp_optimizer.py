@@ -166,13 +166,13 @@ class HyperParamOptimizer:
         self.test_mode_modules = {}
         self._en = enable
 
-    def disable():
+    def disable(self):
         self._en = False
 
-    def enable():
+    def enable(self):
         self._en = True
 
-    def is_enabled():
+    def is_enabled(self):
         return self._en
 
     @staticmethod
