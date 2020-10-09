@@ -148,16 +148,9 @@ class HyperParamOptimizer:
 
     ext = '.hppt'
 
-    def __init__(self, name, path='/tmp', mode='train', strategy='best', sample_num=3, enable=True):
+    def __init__(self, name, path='/tmp', mode='train', strategy='best', sample_num=3, total_num=3000, enable=True):
         self._name = name
-        self._path = path
-        if os.path.isdir(self._path):
-            self._path = os.path.join(self._path, self._name + self.ext)
-        basedir = os.path.dirname(self._path)
-        if not os.path.exists(basedir):
-            os.makedirs(basedir, exist_ok=True)
-        self.lock = CFileLock(self._path)
-        self.load()
+        self.reset_path(path, reload=True)
         self._related_funcs = {}
         self._sample_num = sample_num
         self._mode = mode
@@ -165,6 +158,7 @@ class HyperParamOptimizer:
         self._generate_id()
         self.test_mode_modules = {}
         self._en = enable
+        self._sample_total = total_num
 
     def disable(self):
         self._en = False
@@ -174,6 +168,17 @@ class HyperParamOptimizer:
 
     def is_enabled(self):
         return self._en
+
+    def reset_path(self, path, reload=False):
+        self._path = path
+        if os.path.isdir(self._path):
+            self._path = os.path.join(self._path, self._name + self.ext)
+        basedir = os.path.dirname(self._path)
+        if not os.path.exists(basedir):
+            os.makedirs(basedir, exist_ok=True)
+        self.lock = CFileLock(self._path)
+        if reload:
+            self.load()
 
     @staticmethod
     def _build_new_inputs(arg_info, args, kw_args, hp):
@@ -208,8 +213,7 @@ class HyperParamOptimizer:
 
     def load(self, path=None):
         if path is not None:
-            self._path = path
-            self.lock = CFileLock(self._path)
+            self.reset_path(path)
         if os.path.exists(self._path):
             self.lock.lock()
             with open(self._path, 'rb') as fd:
@@ -278,6 +282,8 @@ class HyperParamOptimizer:
                     for k in existed_data[fname]['data']:
                         if k not in self._data[fname]['data']:
                             self._data[fname]['data'][k] = existed_data[fname]['data'][k]
+                            self._data[fname]['cnt'] += len(
+                                existed_data[fname]['data'][k])
         self._calc_best(force=True)
         with open(self._path, 'wb') as fd:
             pickle.dump(self._data, fd)
@@ -291,16 +297,18 @@ class HyperParamOptimizer:
             arg_info = inspect.getfullargspec(old_func)
             fname = old_func.__name__
             if fname not in self._data:
-                self._data[fname] = {'data': {}, 'hp': hyper_params.to_dict()}
+                self._data[fname] = {'data': {},
+                                     'hp': hyper_params.to_dict(), 'cnt': 0}
             if self._id not in self._data[fname]['data']:
                 self._data[fname]['data'][self._id] = []
 
             @functools.wraps(old_func)
             def new_func(*args, **kwargs):
                 ctx = args[0] if len(args) else None
-                if not self._check_inputs(arg_info, args, kwargs, hyper_params):
-                    return old_func(*args, **kwargs)
-                training = self._mode == 'train' and fname not in self.test_mode_modules
+                # if not self._check_inputs(arg_info, args, kwargs, hyper_params):
+                #     return old_func(*args, **kwargs)
+                training = self._mode == 'train' and fname not in self.test_mode_modules and self._data[
+                    fname]['cnt'] < self._sample_total
                 if training:
                     best_out = None
                     best_score = None
@@ -337,6 +345,7 @@ class HyperParamOptimizer:
                             best_out = out
                         self._data[fname]['data'][self._id].append(
                             (item, score))
+                        self._data[fname]['cnt'] += 1
                     # self.save()
 
                 if self._strategy == 'best' and training:
