@@ -220,7 +220,8 @@ class HyperParamOptimizer:
                 self._data = pickle.load(fd)
             self.lock.unlock()
         else:
-            self._data = {}
+            if not hasattr(self, '_data'):
+                self._data = {}
 
     def _generate_id(self):
         self._id = int(threading.current_thread().ident << 16) % int(
