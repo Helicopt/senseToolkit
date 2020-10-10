@@ -293,21 +293,25 @@ class HyperParamOptimizer:
     def optimize(self, hyper_params=None, static=True):
 
         def func_wrapper(old_func):
-            if hyper_params is None or not self.is_enabled():
-                return old_func
             arg_info = inspect.getfullargspec(old_func)
             fname = old_func.__name__
+            if hyper_params is None:
+                reason = 'empty hyper param group'
+                warnings.warn('function [%s] request rejected, reason: %s.'%(fname, reason))
+                return old_func
             if fname not in self._data:
                 self._data[fname] = {'data': {},
                                      'hp': hyper_params.to_dict(), 'cnt': 0}
             if self._id not in self._data[fname]['data']:
                 self._data[fname]['data'][self._id] = []
+            # print('function [%s] for optimization registered.'%fname)
 
             @functools.wraps(old_func)
             def new_func(*args, **kwargs):
                 ctx = args[0] if len(args) else None
                 # if not self._check_inputs(arg_info, args, kwargs, hyper_params):
-                #     return old_func(*args, **kwargs)
+                if not self.is_enabled():
+                    return old_func(*args, **kwargs)
                 training = self._mode == 'train' and fname not in self.test_mode_modules and self._data[
                     fname]['cnt'] < self._sample_total
                 if training:
