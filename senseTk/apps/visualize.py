@@ -75,7 +75,7 @@ if __name__ == '__main__':
                 if di is not None:
                     matched, lmiss, rmiss = LAP_Matching(g[ind + 1], di[ind + 1],
                                                          lambda x, y: x.iou(y) if x.iou(y) > 0.5 else None)
-                    matched = {i[0]: True for i in matched}
+                    matched = {i[0]: i[1] for i in matched}
                     lmiss = {i: True for i in lmiss}
                     rmiss = [di[ind + 1][i] for i in rmiss]
                     for dt in rmiss:
@@ -93,8 +93,12 @@ if __name__ == '__main__':
                                 drawOnImg(im, dt, conf=(args.format != 'MOT'))
                         else:
                             drawOnImg(im, dt, conf=(args.format != 'MOT'))
-                    txt += '%d %d] %d %d %d %d %.3f s(%d) #%s\n' % (
-                        dt.fr, dt.uid, dt.x1, dt.y1, dt.w, dt.h, dt.conf, dt.status, dt.label)
+                    if di is not None:
+                        txt += '%d %d(%s)] %d %d %d %d %.3f s(%d) #%s\n' % (
+                            dt.fr, dt.uid, (str(di[ind + 1][matched[i]].uid) if i in matched else '-'), dt.x1, dt.y1, dt.w, dt.h, dt.conf, dt.status, dt.label)
+                    else:
+                        txt += '%d %d] %d %d %d %d %.3f s(%d) #%s\n' % (
+                            dt.fr, dt.uid, dt.x1, dt.y1, dt.w, dt.h, dt.conf, dt.status, dt.label)
                     idmapping[i] = dt.uid
                     invmapping[dt.uid] = i
                 oldInfoPos = kwargs['info'].verticalScrollBar().value()
