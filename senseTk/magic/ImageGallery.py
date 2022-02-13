@@ -326,7 +326,7 @@ class IMGallery(QWidget):
                           info=self.infoPanel)
         self.setWindowTitle('IMGallery' + '  -  ' + self.__adjustStr(label))
         self.img_size = self.__adjustImSize(im)
-        im = cv2.resize(im, self.img_size)
+        im = cv2.resize(im, self.img_size, interpolation=cv2.INTER_CUBIC)
         im = getQImg(im)
         self.imgLabel.setPixmap(im)
         self.disButton.setText('%d/%d' % (self.ind+1, len(self.data)))
@@ -411,6 +411,9 @@ class IMGallery(QWidget):
         if e.key() == QtCore.Qt.Key_PageDown or e.key() == QtCore.Qt.Key_K:
             self.S_next(d=25)
         if e.key() == QtCore.Qt.Key_Q:
+            for _, f in self.imgcache:
+                if f is not None:
+                    f.release_tmp()
             self.close()
         if e.key() == QtCore.Qt.Key_Q and (e.modifiers() == QtCore.Qt.ControlModifier):
             exit()
