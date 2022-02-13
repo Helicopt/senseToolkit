@@ -142,6 +142,17 @@ _flow(PyObject *self, PyObject *args)
 	return ret;
 }
 
+static PyObject *
+_getFlowCount(PyObject *self, PyObject * args)
+{
+	int id;
+	int res = PyArg_ParseTuple(args, "i", &id);
+	if (!res)
+		return NULL;
+	int fcnt = getFlowCount(id);
+	return (PyObject *)Py_BuildValue("i", fcnt);
+}
+
 static PyMethodDef
 	extMethods[] = {
 		{"version", _version, METH_VARARGS},
@@ -154,6 +165,7 @@ static PyMethodDef
 		{"setThr", _setThr, METH_VARARGS},
 		{"clear", _clear, METH_VARARGS},
 		{"flow", _flow, METH_VARARGS},
+		{"getFlowCount", _getFlowCount, METH_VARARGS},
 		{"printParam", _printParam, METH_VARARGS},
 		{NULL, NULL}};
 

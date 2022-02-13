@@ -13,6 +13,7 @@ using namespace std;
 struct Edge
 {
 	int a, c, f;
+	bool normal;
 	Edge *nxt, *rev;
 	Edge(int to, int cost, int flow, Edge *Next) : a(to), c(cost), f(flow), nxt(Next)
 	{
@@ -20,6 +21,7 @@ struct Edge
 		// c = cost;
 		// nxt = Next;
 		rev = NULL;
+		normal = true;
 	}
 	Edge() {}
 };
@@ -28,6 +30,7 @@ struct fhnd
 {
 	int nodes;
 	int thr;
+	int flow_count;
 	std::vector<Edge *> *G;
 };
 
@@ -112,6 +115,7 @@ void setNodes(int id, int cnt1, int cnt2)
 			Edge *tmp = new Edge(i, 0, 1, G[0]);
 			G[0] = tmp;
 			Edge *rtmp = new Edge(0, 0, 0, G[i]);
+			rtmp->normal = false;
 			G[i] = rtmp;
 			tmp->rev = rtmp;
 			rtmp->rev = tmp;
@@ -121,6 +125,7 @@ void setNodes(int id, int cnt1, int cnt2)
 			Edge *tmp = new Edge(i, 0, 0, G[hnd->nodes + 1]);
 			G[hnd->nodes + 1] = tmp;
 			Edge *rtmp = new Edge(hnd->nodes + 1, 0, 1, G[i]);
+			rtmp->normal = false;
 			G[i] = rtmp;
 			tmp->rev = rtmp;
 			rtmp->rev = tmp;
@@ -192,6 +197,7 @@ int addEdge(int id, int a, int b, int c, int f = 1)
 		Edge *tmp = new Edge(b, c, f, G[a]);
 		G[a] = tmp;
 		Edge *rtmp = new Edge(a, -c, 0, G[b]);
+		rtmp->normal = false;
 		G[b] = rtmp;
 		tmp->rev = rtmp;
 		rtmp->rev = tmp;
@@ -250,7 +256,7 @@ int spfa(fhnd *hnd, std::vector<int> &mt)
 			ped[nw]->rev->f += 1;
 			ped[nw]->f -= 1;
 			// ped[nw]->c = INF;
-			if (pre[nw] < nw)
+			if (ped[nw]->normal)
 				mt[pre[nw]] = nw;
 			nw = pre[nw];
 		}
@@ -265,9 +271,21 @@ std::vector<int> flow(int id)
 	if (flowMap.find(id) != flowMap.end())
 	{
 		fhnd *hnd = flowMap[id];
+		hnd->flow_count = 0;
 		res.resize(hnd->nodes + 2, -1);
 		while (spfa(hnd, res))
-			;
+			++hnd->flow_count;
 	}
 	return res;
 }
+
+int getFlowCount(int id)
+{
+	if (flowMap.find(id) != flowMap.end())
+	{
+		fhnd *hnd = flowMap[id];
+		return hnd->flow_count;
+	}
+	return -1;
+}
+
