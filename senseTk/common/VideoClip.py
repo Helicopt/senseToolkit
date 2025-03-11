@@ -149,6 +149,9 @@ class VideoClipReader(object):
             return super(VideoClipReader, self).__getattribute__(x)
 
     def __len__(self):
+        if self.length() == 0:
+            print('warning: video is corrupted')
+            return 25
         return int(self.length())
 
     def __getitem__(self, ind):

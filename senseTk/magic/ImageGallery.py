@@ -190,7 +190,7 @@ class IMGallery(QWidget):
         self.imgLabel = QLabel()
         # print dir(self.imgLabel)
         self.imgLabel.setMinimumWidth(
-            max(self.size[0] - max(size[0]/5, 120), 0))
+            max(self.size[0] - max(size[0]//5, 120), 0))
         self.imgLabel.setAlignment(
             QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
         self.ind = ind
@@ -201,8 +201,8 @@ class IMGallery(QWidget):
         self.img_size = (0, 0)
         self.infoStatus = True
 
-        infoPan.setMinimumHeight(self.size[1]/2)
-        infoPan.setMinimumWidth(self.size[0]/5)
+        infoPan.setMinimumHeight(self.size[1]//2)
+        infoPan.setMinimumWidth(self.size[0]//5)
 
         vbox = QVBoxLayout()
         subvb = QVBoxLayout()
@@ -368,7 +368,7 @@ class IMGallery(QWidget):
         self.ind = min(self.ind, len(self.data)-1)
         self.refresh()
 
-    def S_fromhead(self, offset=0):
+    def S_fromhead(self, args, offset=0):
         pre = self.__preclick
         self.__preclick = time.time()
         if self.__preclick - pre < 0.5:
@@ -412,7 +412,7 @@ class IMGallery(QWidget):
             self.S_next(d=25)
         if e.key() == QtCore.Qt.Key_Q:
             for _, f in self.imgcache:
-                if f is not None:
+                if f is not None and hasattr(f, 'release_tmp'):
                     f.release_tmp()
             self.close()
         if e.key() == QtCore.Qt.Key_Q and (e.modifiers() == QtCore.Qt.ControlModifier):
